@@ -1,0 +1,3 @@
+export const CLEAR_EVENTS = {
+	CLEAR: 'CLEAR_EVENTS.CLEAR'
+};

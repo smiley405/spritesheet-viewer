@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8" />
+		<meta
+	  http-equiv="Content-Security-Policy"
+   content="script-src 'self';"
+   />
+		<meta
+	  http-equiv="X-Content-Security-Policy"
+   content="script-src 'self';"
+   />
+		<link rel="stylesheet" href="./css/main.css">
+		<!-- <title>spritesheet-viewer</title> -->
+	</head>
+	<body>
+		<div id="root">
+			<div id="viewport-container">
+				<div id="viewport" class="pixel-rendering"></div>
+			</div>
+			<div id="preview" class="pixel-rendering"></div>
+
+			<div id="top-bar">
+				<div id="file-name-header"></div>
+			</div>
+			<div id="bottom-bar">
+				<div id="frames" class="pixel-rendering"></div>
+			</div>
+
+			<div id="popup-bg"></div>
+			<div id="popup"></div>
+		</div>
+	</body>
+	<script type="text/javascript" src="./out/app.min.js"></script>
+</html>

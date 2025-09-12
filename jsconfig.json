@@ -1,0 +1,14 @@
+{
+	"compilerOptions": {
+		"baseUrl": ".",
+		"paths": {
+			"@renderer/*": ["./src/renderer/*"],
+		},
+		"target": "esnext",
+		"module": "esnext",
+		"moduleResolution": "node",
+		"checkJs": true,
+		"allowSyntheticDefaultImports": true
+	},
+	"exclude": ["node_modules"]
+}

@@ -1,0 +1,359 @@
+body {
+	font-family: Arial Narrow,Arial;
+	/*text-transform: uppercase;*/
+	font-size: 1.5em;
+	color: #fff;
+	width: 100%;
+	background-color: #383838;
+	padding: 0;
+	margin: 0
+}
+
+html {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	overflow: hidden; /*  Disable scrollbars */
+	z-index: 100;
+}
+
+#root dd,dl,dt,form,h1,h2,h3,h4,h5,h6,html,li,ol,p,table,ul {
+	padding: 0;
+	margin: 0
+}
+
+#root button {
+	font-size: 1.5rem;
+	width: 150px;
+	color: lightskyblue;
+	background-color: darkslategrey;
+}
+
+#root button:hover {
+	cursor: pointer;
+	background: darkcyan;
+}
+
+#root input {
+	font-size: 1.3rem;
+	font-weight: bold;
+	color: darkslategrey;
+}
+
+#root input[type=checkbox],
+#root input[type=radio] {
+	width: 35px;
+	height: 35px;
+}
+
+#root input[type=color] {
+	width: 80px;
+	height: 40px;
+}
+
+#root,
+#viewport-container,
+#canvas {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+}
+
+#root, #popup, #popup-bg, #viewport-container {
+	width: 1280px;
+	height: 720px; 
+}
+
+#root {
+	background-color: #232629;
+	overflow: hidden;
+}
+
+#canvas {
+	pointer-events: auto;
+	z-index: -1;
+}
+
+.pixel-rendering {
+	image-rendering: auto;
+	image-rendering: crisp-edges;
+	image-rendering: pixelated;
+}
+
+#top-bar, #bottom-bar {
+	position: absolute;
+	width: 100%;
+	margin-left: -1px;
+	display: flex;
+}
+
+#top-bar {
+	gap: 10px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between; 
+	align-items: flex-end;
+	background-color: #29353b;
+	top: 0px;
+	height: auto;
+	border-bottom: 2px solid navajowhite;
+}
+
+#bottom-bar {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: flex-start;
+	bottom: 0px;
+	background-color: #29353b;
+	height: 140px;
+	overflow-x: auto;
+	border-top: 2px solid navajowhite;
+}
+
+#file-name-header {
+	display: none;
+	padding: 2px 5px;
+	background-color: black;
+	border-bottom-right-radius: 10px;
+	border-top-left-radius: 10px;
+	opacity: 0.8;
+	font-size: 16px;
+}
+#frames-bg {
+	position: relative;
+	background-color: #383838;
+	width: 100%;
+}
+
+.menu {
+	padding: 10px;
+}
+
+.menu:hover {
+	background-color: #0f56d9;
+}
+
+.menu-button-active {
+	background-color: #0f56d9;
+}
+
+#viewport {
+	position: absolute;
+}
+
+#viewport > canvas {
+	position: absolute;
+}
+
+#preview {
+	position: absolute;
+	background-color: #29353b;
+	overflow: hidden;
+	width: 100px;
+	height: 100px;
+	border: 2px solid darkcyan;
+	padding: 5px;
+}
+
+.preview-frame-image {
+	width: 100px;	
+	height: 100px;
+	object-fit: contain;
+}
+
+#frames {
+	display: flex;
+	flex-direction: row;
+	justify-content: flex-start;
+	background-color: #24283b;
+	gap: 10px;
+	padding-left: 10px;
+}
+
+.frame {
+	display: grid;
+	width: 100px;
+	height: 100px;
+	padding: 5px;
+}
+
+.frame-image {
+	pointer-events: none;
+	width: 100px;
+	height: 100px;
+	object-fit: contain;
+}
+
+.popup-contents {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: 20px;
+	margin: 0;
+	position: absolute;
+	width: auto;
+	padding: 30px;
+	background-color: #07090a;
+	border-radius: 10px;
+	border: 2px solid darkseagreen;
+}
+
+#popup-help {
+	overflow: auto;
+	height: 400px;
+	align-items: flex-start;
+}
+
+#popup-settings {
+	height: 45%;
+	overflow: auto;
+}
+
+.popup-buttons {
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	gap: 20px;
+	margin: 0 auto;
+}
+
+#popup {
+	display: flex;
+	justify-content: center;
+	flex-direction: column;
+	align-items: center;
+}
+#popup-help-app-version {
+	text-align: center;
+	padding: 2px 0;
+	width: 100%;
+	border-bottom: 1px solid darkslategrey;
+	font-weight: bold;
+}
+
+#popup-grid-input {
+	display: flex;
+	flex-direction: row;
+	gap: 20px;
+}
+
+.notify-popup {
+	text-align: center;
+    width: 800px;
+    max-height: 300px;
+	overflow-y: auto;
+    min-height: 100px;
+}
+
+.popup-text {
+	width: 100%;
+}
+
+.error-popup {
+	border: 2px solid #9f101c;
+}
+
+.warn-popup {
+	border: 2px solid #dced55;
+}
+
+.success-popup {
+	border: 2px solid #5ded55;
+}
+
+.inactive {
+	border: 5px solid #5f686c;
+}
+
+.active {
+	border: 5px solid #45c73e;
+}
+
+#popup-bg {
+	top: 0px;
+	position: absolute;
+	background-color: black;
+	opacity: 0.5;
+}
+
+#play-stop-btn {
+	border-radius: 5px;
+	padding: 5px;
+	cursor: pointer;
+	width: 120px;
+	text-align: center;
+}
+
+#play-stop-btn:hover {
+	cursor: pointer;
+	border: 2px solid darkkhaki;
+}
+
+.play-btn {
+	background-color: dodgerblue;
+	color: white;
+}
+
+.stop-btn {
+	background-color: crimson;
+}
+
+.frame-index-number {
+	position: absolute;
+	padding: 2px 5px;
+	font-weight: bold;
+	background-color: dimgrey;
+	text-align: center;
+	bottom: 0;
+}
+
+.display-input, #export-gif-quality, #duration {
+	width: 100px;
+}
+
+#display-contents {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	gap: 5px;
+}
+
+.display-sub-contents {
+	background-color: #24283b;
+	padding: 2px 10px;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	gap: 10px;
+}
+
+/**
+ * @link https://tweakpane.github.io/docs/theming/
+ * theme: Translucent
+ */
+:root {
+  --tp-base-background-color: hsla(0, 0%, 10%, 0.80);
+  --tp-base-shadow-color: hsla(0, 0%, 0%, 0.2);
+  --tp-button-background-color: hsla(0, 0%, 80%, 1.00);
+  --tp-button-background-color-active: hsla(0, 0%, 100%, 1.00);
+  --tp-button-background-color-focus: hsla(0, 0%, 95%, 1.00);
+  --tp-button-background-color-hover: hsla(0, 0%, 85%, 1.00);
+  --tp-button-foreground-color: hsla(0, 0%, 0%, 0.80);
+  --tp-container-background-color: hsla(0, 0%, 0%, 0.30);
+  --tp-container-background-color-active: hsla(0, 0%, 0%, 0.60);
+  --tp-container-background-color-focus: hsla(0, 0%, 0%, 0.50);
+  --tp-container-background-color-hover: hsla(0, 0%, 0%, 0.40);
+  --tp-container-foreground-color: hsla(0, 0%, 100%, 0.50);
+  --tp-groove-foreground-color: hsla(0, 0%, 0%, 0.20);
+  --tp-input-background-color: hsla(0, 0%, 0%, 0.30);
+  --tp-input-background-color-active: hsla(0, 0%, 0%, 0.60);
+  --tp-input-background-color-focus: hsla(0, 0%, 0%, 0.50);
+  --tp-input-background-color-hover: hsla(0, 0%, 0%, 0.40);
+  --tp-input-foreground-color: hsla(0, 0%, 100%, 0.50);
+  --tp-label-foreground-color: hsla(0, 0%, 100%, 0.50);
+  --tp-monitor-background-color: hsla(0, 0%, 0%, 0.30);
+  --tp-monitor-foreground-color: hsla(0, 0%, 100%, 0.30);
+}

@@ -1,0 +1,77 @@
+{
+	"type": "module",
+	"name": "spritesheet-viewer",
+	"version": "1.0.1",
+	"description": "Spritesheet viewer for GrafX2",
+	"main": "./src/main/main.js",
+	"scripts": {
+		"dev": "electron . & npm run watch",
+		"view": "npm run build && electron .",
+		"build": "node esbuild.build.js",
+		"watch": "node esbuild.watch.js",
+		"pack": "npm run build && electron-builder",
+		"debug:main": "electron --inspect-brk . & npm run watch",
+		"lint": "npx eslint 'src/**/*.js' --cache --max-warnings 0",
+		"lint:fix": "npm run lint -- --fix"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/smiley405/spritesheet-viewer.git"
+	},
+	"author": "smiley405",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/smiley405/spritesheet-viewer/issues"
+	},
+	"homepage": "https://github.com/smiley405/spritesheet-viewer#readme",
+	"devDependencies": {
+		"@eslint/js": "^9.27.0",
+		"@tweakpane/core": "^2.0.5",
+		"electron": "^36.2.1",
+		"electron-builder": "^26.0.12",
+		"esbuild": "0.25.4",
+		"eslint": "^9.27.0",
+		"eslint-import-resolver-node": "^0.3.9",
+		"eslint-plugin-import": "^2.31.0",
+		"eslint-plugin-jsdoc": "^50.6.17",
+		"eslint-plugin-simple-import-sort": "^12.1.1",
+		"eslint-plugin-unused-imports": "^4.1.4",
+		"globals": "^16.1.0"
+	},
+	"dependencies": {
+		"@panzoom/panzoom": "^4.6.0",
+		"@stdlib/fs-read-file": "^0.2.2",
+		"base64-img": "^1.0.4",
+		"chokidar": "^4.0.3",
+		"drag-and-drop-files": "^0.0.1",
+		"eventemitter3": "^5.0.1",
+		"execa": "^9.5.3",
+		"file-saver": "^2.0.5",
+		"fs-extra": "^11.3.0",
+		"glob": "^11.0.2",
+		"mime": "^4.0.7",
+		"spritesmith": "^3.5.1",
+		"tweakpane": "^4.0.5"
+	},
+	"build": {
+		"appId": "io.spritesheet.viewer",
+		"productName": "spritesheet-viewer",
+		"icon": "build/icons/icon.icns",
+		"win": {
+			"target": [
+				"zip"
+			]
+		},
+		"mac": {
+			"target": [
+				"zip"
+			]
+		},
+		"linux": {
+			"target": [
+				"AppImage",
+				"zip"
+			]
+		}
+	}
+}

@@ -1,0 +1,3 @@
+export const SETTINGS_EVENTS = {
+	UPDATE: 'SETTINGS_EVENTS.UPDATE'
+};

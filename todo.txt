@@ -1,0 +1,2 @@
+// TODO::
+[] better gif export options; right now user have to install ffmpeg manually to export gif.
