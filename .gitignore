@@ -1,4 +1,52 @@
-node_modules
-dist
-out
+# Node modules
+node_modules/
+
+# Build output
+dist/
+out/
+release/
+
+# Electron-builder cache
+.build/
+electron-builder.yaml
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ESLint cache
 .eslintcache
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Podman/Docker artifacts
+*.tar
+*.img
+*.container
+*.pid
+
+# Environment files
+.env
+.env.local
+.env.production
+.env.development
+
+# VSCode settings (optional)
+.vscode/
+
+# Temporary files
+*.swp
+*.swo
+*.bak
+*.tmp
+
+# FFmpeg outputs (ignore all GIFs except sample/)
+*.gif
+!sample/*.gif
+
+# AppImage runtime cache
+.AppImage*
+
