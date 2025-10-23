@@ -88,11 +88,21 @@ podman build -t spritesheet-builder .
 podman run --rm -v $(pwd):/app:Z spritesheet-builder
 ```
 
+or simply run:
+```bash
+npm run podman:build
+```
+
 #### Docker (Other platforms)
 
 ```bash
 docker build -t spritesheet-builder .
 docker run --rm -v $(pwd):/app spritesheet-builder
+```
+
+or simply run:
+```bash
+npm run docker:build
 ```
 
 #### 📦 Output

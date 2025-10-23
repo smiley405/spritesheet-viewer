@@ -1,7 +1,7 @@
 {
 	"type": "module",
 	"name": "spritesheet-viewer",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"description": "Spritesheet viewer for GrafX2",
 	"main": "./src/main/main.js",
 	"scripts": {
@@ -12,7 +12,9 @@
 		"pack": "npm run build && electron-builder",
 		"debug:main": "electron --inspect-brk . & npm run watch",
 		"lint": "npx eslint 'src/**/*.js' --cache --max-warnings 0",
-		"lint:fix": "npm run lint -- --fix"
+		"lint:fix": "npm run lint -- --fix",
+		"podman:build":"podman build -t spritesheet-builder . && podman run --rm -v $(pwd):/app:Z spritesheet-builder",
+		"docker:build":"docker build -t spritesheet-builder . && docker run --rm -v $(pwd):/app spritesheet-builder"
 	},
 	"repository": {
 		"type": "git",

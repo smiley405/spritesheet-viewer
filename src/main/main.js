@@ -30,7 +30,13 @@ async function readGif(src, onComplete) {
 	fs.mkdirSync(tempDir);
 
 	// convert gif to pngs
-	const cmdFlags = ['-i', `${src}`, '-vsync', '0', `${tempDir}/frame%d.png`];
+	const cmdFlags = [
+		'-i', `${src}`,
+		// reverse again to restore original order
+		'-vf', 'reverse',
+		'-vsync', '0',
+		`${tempDir}/frame%d.png`
+	];
 
 	await execa('ffmpeg', cmdFlags);
 
