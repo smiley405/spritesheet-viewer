@@ -10,9 +10,9 @@ import { getDivElementById } from '@renderer/utils';
 
 export function FramesCollection() {
 	/**
-	 * @type {{[id: string]: HTMLDivElement}}
+	 * @type {Map<string, HTMLDivElement>}
 	 */
-	let selectedFrames = {};
+	let selectedFrames = new Map();
 	/**
 	 * @type {HTMLImageElement}
 	 */
@@ -45,6 +45,9 @@ export function FramesCollection() {
 	 * @param {import("../events/GridEvents").SelectGridArea} data
 	 */
 	async function onSelectGridArea(data) {
+		// Wait for image to load if it's not already
+		await cachedViewportImage.decode();
+
 		/**
 		 * @type {HTMLCanvasElement}
 		 */
@@ -70,7 +73,7 @@ export function FramesCollection() {
 		}
 
 		div.appendChild(frame);
-		selectedFrames[data.id] = frame;
+		selectedFrames.set(data.id, frame);
 
 		if (!visible) {
 			frame.style.display = 'none';
@@ -105,10 +108,10 @@ export function FramesCollection() {
 	 * @param {import("../events/GridEvents").DeselectGridArea} id
 	 */
 	function onDeselectGridArea({ id }) {
-		const activeIndex = getFrameIndex(selectedFrames[id]);
+		const activeIndex = getFrameIndex(selectedFrames.get(id));
 
 		let newId;
-		const ids = Object.keys(selectedFrames);
+		const ids = selectedFrames.keys;
 
 		for (let i = 0; i < ids.length; i++) {
 			if (ids[i] === id && i) {
@@ -122,12 +125,12 @@ export function FramesCollection() {
 			newIndex = 0;
 		}
 
-		div.removeChild(selectedFrames[id]);
-		delete selectedFrames[id];
+		div.removeChild(selectedFrames.get(id));
+		selectedFrames.delete(id);
 
 		if (isShowIndexNumber) {
 			// re-calculate and assign index frame number
-			const frames = Object.values(selectedFrames);
+			const frames = selectedFrames.values;
 
 			for (let j = 0; j < frames.length; j++) {
 				if (frames[j].children) {
@@ -143,7 +146,7 @@ export function FramesCollection() {
 	function clearFrames() {
 		activeFrameIndex = Global.state.preview.activeFrameIndex;
 		div.innerHTML = '';
-		selectedFrames = {};
+		selectedFrames.clear();
 	}
 
 	function onClear() {
@@ -158,7 +161,7 @@ export function FramesCollection() {
 	 * @returns {HTMLDivElement}
 	 */
 	function getFrameImage(id) {
-		return /** @type {HTMLDivElement} */(selectedFrames[id].children[0]);
+		return /** @type {HTMLDivElement} */(selectedFrames.get(id).children[0]);
 	}
 
 	function tick() {
@@ -218,7 +221,7 @@ export function FramesCollection() {
 	 */
 	function onClickGridArea(id) {
 		if (frames.length) {
-			const frame = selectedFrames[id];
+			const frame = selectedFrames.get(id);
 
 			const index = getFrameIndex(frame);
 			onClickFrame(id, index);
