@@ -131,23 +131,27 @@ export function getInputElementByName(name) {
 }
 
 /**
- * @param {number} duration
- * @returns {number}
+ * Convert frame duration in milliseconds to FPS (up to 2 decimal places)
+ * @param {number} frameDurationMs - Duration of one frame in milliseconds
+ * @returns {number} - Frames per second
  */
-export function msToFps(duration) {
-	// only 2 decimal places;
-	const num = 1000 / duration;
-	return Math.floor(num * 100)/100;
+export function msToFPS(frameDurationMs) {
+	if (frameDurationMs <= 0) return 0;
+
+	const fps = 1000 / frameDurationMs;
+	return Math.round(fps * 100) / 100; // round to 2 decimal places
 }
 
 /**
- * @param {number} fps
- * @returns {number}
+ * Convert FPS to frame duration in milliseconds (up to 2 decimal places)
+ * @param {number} fps - Frames per second
+ * @returns {number} - Duration of one frame in milliseconds
  */
 export function fpsToMs(fps) {
-	// only 2 decimal places;
-	const num = 1000 / fps;
-	return Math.floor(num * 100)/100;
+	if (fps <= 0) return 0;
+
+	const ms = 1000 / fps;
+	return Math.round(ms * 100) / 100; // round to 2 decimal places
 }
 
 /**

@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import readFile from '@stdlib/fs-read-file';
 import { FSWatcher,watch } from 'chokidar';
 import { app, BrowserWindow, dialog,ipcMain, nativeTheme } from 'electron';
+import Store from 'electron-store';
 import {execa} from 'execa';
 import fs from 'fs-extra';
 import { glob } from 'glob';
@@ -13,11 +14,40 @@ import Spritesmith from 'spritesmith';
 const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
 const __dirname = path.dirname(__filename); // get the name of the directory
 
-// for now, if on making any changes to node files (main, preload) rerun "electron ."
+const eStore = new Store();
 
 /**
- * @param {string} src 
- * @param {(outputPath: string[]) => void} onComplete 
+ * Save data using electron-store
+ * @param {string} id
+ * @param {*} value
+ * @returns {void}
+ */
+function saveRecord(id, value) {
+	eStore.set(id, value);
+}
+
+/**
+ * Get data using electron-store
+ * @param {string} id
+ * @returns {*}
+ */
+function getRecord(id) {
+	const data = eStore.get(id);
+	return data;
+}
+
+/**
+ * Delete data from electron-store
+ * @param {string} id
+ * @returns {void}
+ */
+function deleteRecord(id) {
+	eStore.delete(id);
+}
+
+/**
+ * @param {string} src
+ * @param {(outputPath: string[]) => void} onComplete
  */
 async function readGif(src, onComplete) {
 	const path = src.substring(0, src.lastIndexOf('/'));
@@ -76,7 +106,7 @@ async function delay(ms=0) {
 /**
  * @type {FSWatcher}
  */
-let watcher; 
+let watcher;
 
 /**
  * @param {string} src
@@ -115,7 +145,6 @@ function watchFile(src, callback) {
 				// fs-read-file is more accurate than fs.readfile, coz sometimes with that you will get empty data
 				const contents = readFile.sync(src);
 				b64 = contents.toString('base64');
-				// console.log('b64:', Boolean(b64));
 			};
 
 			read();
@@ -173,16 +202,25 @@ const useExportQueue = () => {
 	};
 };
 
+function capitalizeStringAfterDash(str='') {
+	return str.split('-')
+		.map(word => word[0].toUpperCase() + word.slice(1))
+		.join('-');
+}
+
 const createWindow = () => {
+	const appName = capitalizeStringAfterDash(app.name).replace('-', ' ');
+	const appVersion = 'v' + app.getVersion();
 	const appInfo = /** @type {TAppInfo} */({
-		name: app.name,
-		version: app.getVersion(),
+		name: appName,
+		version: appVersion,
 	});
 
 	// enable this to see icon while on dev
 	const icon = path.join(__dirname, '../../build', 'icons', 'icon.png');
 	const win = new BrowserWindow({
 		icon,
+		title: appName,
 		width: 800,
 		height: 600,
 		darkTheme: true,
@@ -250,6 +288,12 @@ const createWindow = () => {
 				}
 			}
 		});
+		ipcMain.on('save-record', async (_, payload) => {
+			saveRecord(payload.id, payload.value);
+		});
+		ipcMain.on('delete-record', async (_, payload) => {
+			deleteRecord(payload.id);
+		});
 	});
 
 	const devTools = () => {
@@ -289,6 +333,10 @@ const createWindow = () => {
 		return appInfo;
 	});
 
+	ipcMain.handle('get-record', (_, payload) => {
+		return getRecord(payload.id);
+	});
+
 	ipcMain.on('export-overwrite-reply', async (event, result) => {
 		if (result) {
 			await exportQueue.run();
@@ -305,14 +353,14 @@ const createWindow = () => {
 				const dir = result.filePaths[0];
 				const images = payload.images;
 				const name = payload.name;
-				const suffix = payload.suffix;
+				const fileNameTags = payload.fileNameTags;
 
 				exportQueue.set(async () => {
 					exportProgress('Please Wait..');
 
 					images.forEach((img, i) => {
 						const fileName = `${name}_${i}.png`;
-						const filePath = `${dir}/${fileName}${suffix}`;
+						const filePath = `${dir}/${fileName}${fileNameTags}`;
 						const base64Data = img.split('base64,')[1];
 						fs.writeFileSync(filePath, base64Data, 'base64');
 					});
@@ -325,7 +373,7 @@ const createWindow = () => {
 
 				images.forEach((img, i) => {
 					const fileName = `${name}_${i}.png`;
-					const filePath = `${dir}/${fileName}${suffix}`;
+					const filePath = `${dir}/${fileName}${fileNameTags}`;
 
 					if (fs.existsSync(filePath)){
 						fileExistsList.push(filePath);
@@ -364,11 +412,11 @@ const createWindow = () => {
 			if (!result.canceled) {
 				const dir = result.filePaths[0];
 				const name = payload.name;
-				const suffix = payload.suffix;
+				const fileNameTags = payload.fileNameTags;
 				const tempDir = `${dir}/__temp__`;
 				const images = payload.images;
 				const fps = payload.duration;
-				const outFilePath = `${dir}/${name}${suffix}.gif`;
+				const outFilePath = `${dir}/${name}${fileNameTags}.gif`;
 
 				exportQueue.set(async () => {
 					exportProgress('Please Wait..');
@@ -436,12 +484,12 @@ const createWindow = () => {
 			if (!result.canceled) {
 				const dir = result.filePaths[0];
 				const name = payload.name;
-				const suffix = payload.suffix;
+				const fileNameTags = payload.fileNameTags;
 				const tempDir = `${dir}/__temp__`;
 				const images = payload.images;
 				const padding = payload.padding;
 				const algorithm = payload.algorithm;
-				const outFilePath = `${dir}/${name}${suffix}.png`;
+				const outFilePath = `${dir}/${name}${fileNameTags}.png`;
 				const tempImagesPath = [];
 
 				exportQueue.set(async () => {

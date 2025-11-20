@@ -13,8 +13,8 @@
 		"debug:main": "electron --inspect-brk . & npm run watch",
 		"lint": "npx eslint 'src/**/*.js' --cache --max-warnings 0",
 		"lint:fix": "npm run lint -- --fix",
-		"podman:build":"podman build -t spritesheet-builder . && podman run --rm -v $(pwd):/app:Z spritesheet-builder",
-		"docker:build":"docker build -t spritesheet-builder . && docker run --rm -v $(pwd):/app spritesheet-builder"
+		"podman:build": "podman build -t spritesheet-builder . && podman run --rm -v $(pwd):/app:Z spritesheet-builder",
+		"docker:build": "docker build -t spritesheet-builder . && docker run --rm -v $(pwd):/app spritesheet-builder"
 	},
 	"repository": {
 		"type": "git",
@@ -26,6 +26,22 @@
 		"url": "https://github.com/smiley405/spritesheet-viewer/issues"
 	},
 	"homepage": "https://github.com/smiley405/spritesheet-viewer#readme",
+	"dependencies": {
+		"@panzoom/panzoom": "^4.6.0",
+		"@stdlib/fs-read-file": "^0.2.2",
+		"base64-img": "^1.0.4",
+		"chokidar": "^4.0.3",
+		"drag-and-drop-files": "^0.0.1",
+		"electron-store": "^11.0.2",
+		"eventemitter3": "^5.0.1",
+		"execa": "^9.6.0",
+		"file-saver": "^2.0.5",
+		"fs-extra": "^11.3.2",
+		"glob": "^11.0.3",
+		"mime": "^4.1.0",
+		"spritesmith": "^3.5.1",
+		"tweakpane": "^4.0.5"
+	},
 	"devDependencies": {
 		"@eslint/js": "^9.36.0",
 		"@tweakpane/core": "^2.0.5",
@@ -40,34 +56,24 @@
 		"eslint-plugin-unused-imports": "^4.2.0",
 		"globals": "^16.4.0"
 	},
-	"dependencies": {
-		"@panzoom/panzoom": "^4.6.0",
-		"@stdlib/fs-read-file": "^0.2.2",
-		"base64-img": "^1.0.4",
-		"chokidar": "^4.0.3",
-		"drag-and-drop-files": "^0.0.1",
-		"eventemitter3": "^5.0.1",
-		"execa": "^9.6.0",
-		"file-saver": "^2.0.5",
-		"fs-extra": "^11.3.2",
-		"glob": "^11.0.3",
-		"mime": "^4.1.0",
-		"spritesmith": "^3.5.1",
-		"tweakpane": "^4.0.5"
-	},
 	"build": {
 		"appId": "com.grafx2.spritesheetviewer",
 		"productName": "Spritesheet Viewer",
 		"icon": "build/icons/icon",
 		"win": {
-			"target": ["zip"],
+			"target": [
+				"zip"
+			],
 			"icon": "build/icons/icon.ico",
 			"artifactName": "${productName}-v${version}-win.zip"
 		},
 		"linux": {
-			"target": ["AppImage", "zip"],
+			"target": [
+				"AppImage",
+				"zip"
+			],
 			"icon": "build/icons/icon.png",
 			"artifactName": "${productName}-v${version}-linux.${ext}"
-		  }
+		}
 	}
 }

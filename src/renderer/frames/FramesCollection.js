@@ -26,7 +26,7 @@ export function FramesCollection() {
 
 	Emitter.on(CLEAR_EVENTS.CLEAR, onClear.bind(this));
 	Emitter.on(GRID_EVENTS.CLICK_AREA, onClickGridArea.bind(this));
-	Emitter.on(SETTINGS_EVENTS.UPDATE, onSettingsUpdate.bind(this));
+	Emitter.on(SETTINGS_EVENTS.UPDATE, onUpdateSettings.bind(this));
 	Emitter.on(GRID_EVENTS.SELECT_AREA, onSelectGridArea.bind(this));
 	Emitter.on(GRID_EVENTS.DESELECT_AREA, onDeselectGridArea.bind(this));
 	Emitter.on(UPLOADER_EVENTS.IMAGE_LOADED, destroy.bind(this));
@@ -40,6 +40,8 @@ export function FramesCollection() {
 	function onCreateViewport(data) {
 		cachedViewportImage = data.cachedImage;
 	}
+
+	onUpdateSettings();
 
 	/**
 	 * @param {import("../events/GridEvents").SelectGridArea} data
@@ -228,7 +230,10 @@ export function FramesCollection() {
 		}
 	}
 
-	function onSettingsUpdate() {
+	function onUpdateSettings() {
+		// bottom-bar
+		div.parentElement.style.backgroundColor = Global.state.settings.framesCollection.backgroundColor;
+
 		if (Global.state.settings.rendering.pixelated) {
 			div.classList.add('pixel-rendering');
 		} else {

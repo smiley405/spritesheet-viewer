@@ -44,7 +44,7 @@ Download ready-to-use builds from the [Releases](https://github.com/smiley405/sp
 - **Zoom:** Mouse wheel
 - **Pan:** Click and drag with left mouse button
 - **Play/Pause:** Spacebar
-- **Remember Settings:** Use **Menu → Remember Settings**
+- **Reapply on Image Load:** Use **Menu → Reapply on Image Load** to automatically apply your selected settings to images you load during this session.
 - **Export GIFs:** FFmpeg is required (included in container builds)
 - **Frame Navigation:**
   1. Click a frame in the collection

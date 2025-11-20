@@ -11,11 +11,11 @@
  */
 
 /**
- * @typedef {{ name: string, images: string[], suffix?: string }} TExportPngSequencesPayload
+ * @typedef {{ name: string, images: string[], fileNameTags?: string }} TExportPngSequencesPayload
  */
 
 /**
- * @typedef {{ name: string, images: string[], duration: number, width: number, height: number, suffix?: string }} TExportGifPayload
+ * @typedef {{ name: string, images: string[], duration: number, width: number, height: number, fileNameTags?: string }} TExportGifPayload
  */
 
 /**
@@ -23,7 +23,15 @@
  */
 
 /**
- * @typedef {{ name: string, images: string[], algorithm: TSpriteSheetAlgorithm, padding: number, suffix?: string }} TExportSpriteSheetPayload
+ * @typedef {{ name: string, images: string[], algorithm: TSpriteSheetAlgorithm, padding: number, fileNameTags?: string }} TExportSpriteSheetPayload
+ */
+
+/**
+ * @typedef {'Default' | 'Iceberg' | 'Jetblack' | 'Light' | 'Retro' | 'Translucent' | 'Vivid'} UITheme
+ */
+
+/**
+ * @typedef {'success' | 'warn' | 'failed'} NotificationType
  */
 
 /**

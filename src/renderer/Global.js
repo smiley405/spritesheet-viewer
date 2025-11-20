@@ -1,7 +1,7 @@
 import { Keyboard } from './Keyboard';
 import { getLocale } from './locale';
 import { Ticker } from './Ticker';
-import { msToFps } from './utils';
+import { msToFPS } from './utils';
 
 /**
  * @typedef {'PNG Sequences'|'GIF'|'SpriteSheet'} ExportFileType
@@ -16,7 +16,7 @@ import { msToFps } from './utils';
  */
 
 /**
- * @typedef {{activeFrameIndex?: number, zoom?: number, pan?: PanGlobalData}} PreviewGlobalData
+ * @typedef {{activeFrameIndex?: number, totalFrames?: number, zoom?: number, pan?: PanGlobalData}} PreviewGlobalData
  */
 
 /**
@@ -38,7 +38,7 @@ import { msToFps } from './utils';
  */
 
 /**
- * @typedef {{grid?: boolean, viewport?: boolean, preview?: boolean, frames?: boolean, animationController?: boolean, sameFileNameOnly?: boolean}} RememberGlobalData
+ * @typedef {{grid?: boolean, viewport?: boolean, preview?: boolean, frames?: boolean, sameFileNameOnly?: boolean}} RememberGlobalData
  */
 
 /**
@@ -54,7 +54,7 @@ import { msToFps } from './utils';
  */
 
 /**
- * @typedef {{isShow?: boolean, color?: string, opacity?: number}} SettingsGridGlobalData
+ * @typedef {{visible?: boolean, color?: string, opacity?: number}} SettingsGridGlobalData
  */
 
 /**
@@ -62,14 +62,14 @@ import { msToFps } from './utils';
  */
 
 /**
- * @typedef {{viewport: SettingsViewportGlobalData, preview: SettingsPreviewGlobalData, rendering: SettingsRenderingGlobalData}} SettingsGlobalData
+ * @typedef {{viewport: SettingsPreviewGlobalData, preview: SettingsPreviewGlobalData, framesCollection: SettingsPreviewGlobalData, rendering: SettingsRenderingGlobalData, theme: UITheme}} SettingsGlobalData
  */
 
 /**
  * @typedef {object} AnimationControllerGlobalData
  * @property {boolean} [loop]
- * @property {number} [duration] in milliseconds
- * @property {number} [fpsDuration]
+ * @property {number} [durationMs] in milliseconds
+ * @property {number} [frameRate]
  * @property {boolean} [play]
  * @property {boolean} [toggleFps]
  */
@@ -130,7 +130,7 @@ function CreateGlobal() {
 			prevHeight: 8,
 			totalX: 0,
 			totalY: 0,
-			isShow: true,
+			visible: true,
 			color: '#ccc4dd',
 			opacity: 0.4,
 			link: true
@@ -154,13 +154,13 @@ function CreateGlobal() {
 	 * @returns {AnimationControllerGlobalData}
 	 */
 	function defaultAnimationController() {
-		const duration = 80;
+		const durationMs = 100;
 
 		return {
 			loop: true,
 			// in milliseconds
-			duration,
-			fpsDuration: msToFps(duration),
+			durationMs,
+			frameRate: msToFPS(durationMs),
 			play: true,
 			toggleFps: false
 		};
@@ -172,6 +172,7 @@ function CreateGlobal() {
 	function defaultPreview() {
 		return {
 			activeFrameIndex: 0,
+			totalFrames: 0,
 			zoom: 1,
 			pan: {
 				x: 1029,
@@ -202,7 +203,6 @@ function CreateGlobal() {
 			viewport: true,
 			preview: true,
 			frames: true,
-			animationController: true,
 			sameFileNameOnly: true
 		};
 	}
@@ -245,11 +245,15 @@ function CreateGlobal() {
 				pixelated: true
 			},
 			viewport: {
-				backgroundColor: '#232629',
+				backgroundColor: '#454545',
 			},
 			preview: {
-				backgroundColor: '#29353b'
+				backgroundColor: '#454545',
 			},
+			framesCollection: {
+				backgroundColor: '#383838',
+			},
+			theme: 'Retro'
 		};
 	}
 
@@ -411,7 +415,8 @@ function CreateGlobal() {
 		defaultViewport,
 		defaultClear,
 		defaultRemember,
-		defaultSettings
+		defaultSettings,
+		defaultGrid,
 	};
 }
 

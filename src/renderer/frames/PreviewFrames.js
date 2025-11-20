@@ -47,6 +47,7 @@ export function PreviewFrames() {
 
 	Emitter.on(FRAMES_EVENTS.CLICK, onClickFrame.bind(this));
 	Emitter.on(FRAMES_EVENTS.CLEAR, onClearFrames.bind(this));
+	Emitter.on(FRAMES_EVENTS.RESTART, onRestartFrames.bind(this));
 	Emitter.on(UPLOADER_EVENTS.IMAGE_LOADED, onImageLoaded.bind(this));
 	Emitter.on(SETTINGS_EVENTS.UPDATE, onUpdateSettings.bind(this));
 	Emitter.on(PREVIEW_EVENTS.UPDATE_ZOOM, onUpdateZoom.bind(this));
@@ -83,6 +84,8 @@ export function PreviewFrames() {
 		previewDiv.classList.remove('active');
 		previewDiv.classList.add('inactive');
 	};
+
+	onUpdateSettings();
 
 	function render() {
 		ctx.setTransform(1,0,0,1,0,0);
@@ -164,7 +167,7 @@ export function PreviewFrames() {
 			return;
 		} else {
 			if (frames.size) {
-				start();
+				start(currentFrameIndex);
 			}
 		}
 
@@ -172,7 +175,7 @@ export function PreviewFrames() {
 			playing = true;
 		}
 
-		if (Global.state.animationController.fpsDuration !== fps()) {
+		if (Global.state.animationController.frameRate !== fps()) {
 			stop();
 		}
 
@@ -186,7 +189,7 @@ export function PreviewFrames() {
 	}
 
 	function fps() {
-		return Global.state.animationController.fpsDuration;
+		return Global.state.animationController.frameRate;
 	}
 
 	function loop() {
@@ -201,6 +204,9 @@ export function PreviewFrames() {
 		canvas.height = data.height;
 
 		frames.set(data.id, data);
+		Global.set_preview({
+			totalFrames: frames.size
+		});
 	}
 
 	/**
@@ -211,6 +217,10 @@ export function PreviewFrames() {
 		if (currentFrameIndex >= frames.size) {
 			currentFrameIndex = 0;
 		}
+
+		Global.set_preview({
+			totalFrames: frames.size
+		});
 	}
 
 	function updateKeyboardInput() {
@@ -253,6 +263,11 @@ export function PreviewFrames() {
 		resetAnimation();
 	}
 
+	function onRestartFrames() {
+		setCurrentFrameIndex(Global.state.preview.activeFrameIndex);
+		render();
+	}
+
 	function onClearFrames() {
 		resetAnimation();
 
@@ -262,6 +277,10 @@ export function PreviewFrames() {
 		isMouseOver = false;
 		isDecFrame = false;
 		isIncFrame = false;
+		Global.set_preview({
+			totalFrames: Global.defaultPreview().totalFrames,
+			activeFrameIndex: Global.defaultPreview().activeFrameIndex
+		});
 	}
 
 	/**
@@ -286,6 +305,7 @@ export function PreviewFrames() {
 
 	function onUpdateSettings() {
 		previewDiv.style.backgroundColor = Global.state.settings.preview.backgroundColor;
+
 		if (Global.state.settings.rendering.pixelated) {
 			previewDiv.classList.add('pixel-rendering');
 		} else {

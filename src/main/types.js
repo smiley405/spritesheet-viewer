@@ -12,6 +12,9 @@
  * @property {()=>void} toggleAppMenubar
  * @property {TElectronBridgeStateSaveGif} saveGif
  * @property {TElectronBridgeStateSaveSpriteSheet} saveSpriteSheet
+ * @property {TElectronBridgeStateSaveRecord} saveRecord
+ * @property {TElectronBridgeStateGetRecord} getRecord
+ * @property {TElectronBridgeStateDeleteRecord} deleteRecord
  */
 
 
@@ -49,6 +52,18 @@
 
 /**
  * @typedef {(result: boolean) => void} TElectronBridgeStateExportOverwriteReply
+ */
+
+/**
+ * @typedef {(payload: {id: string, value: any}) => void} TElectronBridgeStateSaveRecord
+ */
+
+/**
+ * @typedef {(payload: {id: string}) => Promise<any>} TElectronBridgeStateGetRecord
+ */
+
+/**
+ * @typedef {(payload: {id: string}) => void} TElectronBridgeStateDeleteRecord
  */
 
 /**

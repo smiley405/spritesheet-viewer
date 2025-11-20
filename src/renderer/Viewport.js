@@ -47,6 +47,8 @@ export function Viewport() {
 
 	Global.ticker.add('update', tick.bind(this));
 
+	onUpdateSettings();
+
 	function createCanvas() {
 		canvas = document.createElement('canvas');
 		canvas.setAttribute('id', 'viewport-canvas');
@@ -144,7 +146,8 @@ export function Viewport() {
 	}
 
 	function onUpdateSettings() {
-		getDivElementById('root').style.backgroundColor = Global.state.settings.viewport.backgroundColor;
+		root.style.backgroundColor = Global.state.settings.viewport.backgroundColor;
+
 		if (Global.state.settings.rendering.pixelated) {
 			containerDiv.classList.add('pixel-rendering');
 		} else {

@@ -2,7 +2,9 @@ import { ERROE_CODE } from './const';
 import { Emitter } from './Emitter';
 import { GENERAL_EVENTS } from './events/GeneralEvents';
 import { MENU_EVENTS } from './events/MenuEvents';
+import { SETTINGS_EVENTS } from './events/SettingsEvents';
 import { UPLOADER_EVENTS } from './events/UploaderEvents';
+import { Global } from './Global';
 import { getLocale } from './locale';
 import { ErrorPopup } from './popup/ErrorPopup';
 import { ExportCompletedPopup } from './popup/ExportCompletedPopup';
@@ -36,8 +38,28 @@ export function IPCRenderer() {
 		state.toggleAppMenubar();
 	});
 
+	Emitter.on(SETTINGS_EVENTS.REQUEST_SAVE, () => {
+		state.saveRecord({id: 'settings', value: Global.state.settings});
+	});
+
+	Emitter.on(SETTINGS_EVENTS.REQUEST_DELETE, () => {
+		state.deleteRecord({id: 'settings'});
+	});
+
+	Emitter.on(SETTINGS_EVENTS.REQUEST_LOAD, async() => {
+		/**
+		 * @type {import('./Global').SettingsGlobalData}
+		 */
+		const settings = await state.getRecord({id: 'settings'});
+
+		if (settings) {
+			Global.set_settings(settings);
+			Emitter.emit(SETTINGS_EVENTS.UPDATE);
+		}
+		Emitter.emit(SETTINGS_EVENTS.REQUEST_LOAD_COMPLETE);
+	});
+
 	state.updateImage((e, imgSrc) => {
-		// console.log('renderer.state.updateImage');
 		Emitter.emit(UPLOADER_EVENTS.UPDATE_IMAGE, imgSrc);
 	});
 

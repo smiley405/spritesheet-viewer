@@ -27,7 +27,7 @@ export function Grids() {
 	Emitter.on(GRID_EVENTS.REMOVE, onRemoveGrid.bind(this));
 	Emitter.on(CLEAR_EVENTS.CLEAR, onClear.bind(this));
 	Emitter.on(VIEWPORT_EVENTS.CREATED, onViewportCreated.bind(this));
-	Emitter.on(SETTINGS_EVENTS.UPDATE, onSettingsUpdate.bind(this));
+	Emitter.on(SETTINGS_EVENTS.UPDATE, onUpdateSettings.bind(this));
 
 	function createCanvas() {
 		canvas = document.createElement('canvas');
@@ -97,7 +97,7 @@ export function Grids() {
 
 	function onRemoveGrid() {
 		destroy();
-		Global.set_grid({isShow: false});
+		Global.set_grid({visible: false});
 	}
 
 	function onClear() {
@@ -107,16 +107,16 @@ export function Grids() {
 	}
 
 	function onViewportCreated() {
-		if (Global.state.grid.isShow || Global.state.remember.grid) {
+		if (Global.state.grid.visible || Global.state.remember.grid) {
 			onCreateGrid({width: Global.state.grid.width, height: Global.state.grid.height, imageWidth: Global.state.image.width, imageHeight: Global.state.image.height});
 		}
 	}
 
-	function onSettingsUpdate() {
+	function onUpdateSettings() {
 		if (ctx && Global.state.grid.color) {
 			ctx.fillStyle = Global.state.grid.color;
 		}
 
-		containerDiv.style.display = Global.state.grid.isShow ? 'block' : 'none';
+		containerDiv.style.display = Global.state.grid.visible ? 'block' : 'none';
 	}
 }

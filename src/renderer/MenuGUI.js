@@ -1,7 +1,8 @@
-import {FolderApi, Pane} from 'tweakpane';
+import {ButtonApi, FolderApi, Pane, TabPageApi} from 'tweakpane';
 
 import { Emitter } from './Emitter';
 import { CLEAR_EVENTS } from './events/ClearEvents';
+import { FRAMES_EVENTS } from './events/FramesEvents';
 import { GENERAL_EVENTS } from './events/GeneralEvents';
 import { GRID_EVENTS } from './events/GridEvents';
 import { MENU_EVENTS } from './events/MenuEvents';
@@ -11,15 +12,33 @@ import { VIEWPORT_EVENTS } from './events/ViewportEvents';
 import { Global } from './Global';
 import { getLocale } from './locale';
 import { WarningPopup } from './popup/WarningPopup';
-import { formatValue, fpsToMs, getDivElementById, msToFps, toPx } from './utils';
+import { formatValue, fpsToMs, getDivElementById, msToFPS, toPx } from './utils';
+
+// :root is the <html> element
+const root = document.documentElement;
 
 export function MenuGUI() {
 	const state = Global.state;
+	const locale = getLocale();
 
 	const pane = new Pane({
 		title: 'Menu',
 		expanded: false,
 	});
+
+	const tab = pane.addTab({
+		pages: [
+			{title: locale['menu.tab.general']},
+			{title: locale['menu.tab.export']},
+			{title: locale['menu.tab.settings']},
+			{title: locale['menu.tab.tools']}
+		]
+	});
+
+	const page1 = tab.pages[0];
+	const page2 = tab.pages[1];
+	const page3 = tab.pages[2];
+	const page4 = tab.pages[3];
 
 	// default config
 	const config = {
@@ -68,6 +87,32 @@ export function MenuGUI() {
 
 	config.init();
 
+	const commonOptions = () => {
+		const pages = [page1, page2, page3];
+		/**
+		 * @param {TabPageApi} page
+		 * @returns {void}
+		 */
+		const closeFolders = (page) => {
+			page.children.forEach(child => {
+				if (child['expanded']) {
+					child['expanded'] = false;
+				}
+			});
+		};
+
+		pages.forEach(page => {
+			page.addButton({
+				title: locale['tools.close_opened_folders']
+			}).on('click', () => {
+				closeFolders(page);
+			});
+			page.addBlade({
+				view: 'separator',
+			});
+		});
+	};
+
 	const help = (() => {
 		const self = {
 			open: () => {
@@ -76,12 +121,12 @@ export function MenuGUI() {
 			},
 		};
 
-		pane.addButton({
-			title: 'Help'
+		page1.addButton({
+			title: locale['menu.help']
 		}).on('click', self.open);
 	})();
 
-	const upload = (() => {
+	const load = (() => {
 		const self = {
 			open: () => {
 				Emitter.emit(MENU_EVENTS.LOAD);
@@ -89,35 +134,46 @@ export function MenuGUI() {
 			},
 		};
 
-		pane.addButton({
-			title: 'Load'
+		page1.addButton({
+			title: locale['menu.load']
 		}).on('click', self.open);
 	})();
+
+	commonOptions();
 
 	const animController = (() => {
 		let syncInput = false;
 
-		const f = pane.addFolder({
-			title: 'Animation Controller',
+		const f = page1.addFolder({
+			title: locale['anim.title'],
 			expanded: false
 		});
 
-		const durationInput = f.addBinding(state.animationController, 'duration', {
-			label: getLocale()['anim.milliseconds'],
+		const f1 = f.addFolder({
+			title: locale['anim.durationMs'],
+			expanded: true
+		});
+		const f2 = f.addFolder({
+			title: locale['anim.frameRate'],
+			expanded: true
+		});
+
+		const durationMsInput = f1.addBinding(state.animationController, 'durationMs', {
+			label: '',
 			min: 0,
-			step: 1
+			step: 0.1
 		}).on('change', e => {
 			if (syncInput) {
 				syncInput = false;
 				return;
 			}
 			syncInput = true;
-			state.animationController.fpsDuration = msToFps(e.value);
+			state.animationController.frameRate = msToFPS(e.value);
 			fpsInput.refresh();
 		});
 
-		const fpsInput = f.addBinding(state.animationController, 'fpsDuration', {
-			label: getLocale()['anim.fps'],
+		const fpsInput = f2.addBinding(state.animationController, 'frameRate', {
+			label: '',
 			min: 0,
 			step: 0.1
 		}).on('change', e => {
@@ -128,117 +184,110 @@ export function MenuGUI() {
 			syncInput = true;
 			// Will return 2-decimal rounded value
 			const formatted = formatValue(e.value);
-			state.animationController.fpsDuration = formatted;
-			state.animationController.duration = fpsToMs(formatted);
-			durationInput.refresh();
+			state.animationController.frameRate = formatted;
+			state.animationController.durationMs = fpsToMs(formatted);
+			durationMsInput.refresh();
 		});
 
-		f.addBinding(state.animationController, 'loop');
-		f.addBinding(state.animationController, 'play');
-	})();
-
-	const viewport = (() => {
-		const f = pane.addFolder({
-			title: 'Viewport',
-			expanded: false
+		f.addBinding(state.animationController, 'loop', {
+			label: locale['anim.loop']
+		});
+		const playStatInput = f.addBinding(state.animationController, 'play', {
+			label: locale['anim.playMode'],
+			disabled: true,
 		});
 
-		const pz = f.addBinding(state.viewport, 'zoom', {
-			min: 0,
-			// step: 0.1
-		}).on('change', e => {
-			Emitter.emit(VIEWPORT_EVENTS.UPDATE_ZOOM, e.value);
-		});
-
-		const px = f.addBinding(state.viewport.pan, 'x', {
-			// step: 0.1,
-		}).on('change', e => {
-			Emitter.emit(VIEWPORT_EVENTS.UPDATE_PAN, {x: e.value});
-		});
-
-		const py = f.addBinding(state.viewport.pan, 'y', {
-			// step: 0.1,
-		}).on('change', e => {
-			Emitter.emit(VIEWPORT_EVENTS.UPDATE_PAN, {y: e.value});
-		});
-
-		const update = () => {
-			pz.controller.value.setRawValue(state.viewport.zoom, {forceEmit: false, last: true});
-			px.controller.value.setRawValue(state.viewport.pan.x, {forceEmit: false, last: true});
-			py.controller.value.setRawValue(state.viewport.pan.y, {forceEmit: false, last: true});
+		const isFrameEnded = () => {
+			return state.preview.activeFrameIndex === state.preview.totalFrames - 1;
 		};
 
-		return {update};
-	})();
-
-	const preview = (() => {
-		const f = pane.addFolder({
-			title: 'Preview',
-			expanded: false
-		});
-
-		const pz = f.addBinding(state.preview, 'zoom', {
-			min: 0,
-			// step: 0.1
-		}).on('change', e => {
-			Emitter.emit(PREVIEW_EVENTS.UPDATE_ZOOM, e.value);
-		});
-
-		const px = f.addBinding(state.preview.pan, 'x', {
-			// step: 0.1,
-		}).on('change', e => {
-			Emitter.emit(PREVIEW_EVENTS.UPDATE_PAN, {x: e.value});
-		});
-
-		const py = f.addBinding(state.preview.pan, 'y', {
-			// step: 0.1,
-		}).on('change', e => {
-			Emitter.emit(PREVIEW_EVENTS.UPDATE_PAN, {y: e.value});
-		});
-
-		const update = () => {
-			pz.controller.value.setRawValue(state.preview.zoom, {forceEmit: false, last: true});
-			px.controller.value.setRawValue(state.preview.pan.x, {forceEmit: false, last: true});
-			py.controller.value.setRawValue(state.preview.pan.y, {forceEmit: false, last: true});
+		const self = {
+			play: () => {
+				if (isFrameEnded()) {
+					self.restart();
+				}
+				playStatInput.controller.value.setRawValue(true);
+			},
+			restart: () => {
+				Global.set_preview({
+					activeFrameIndex: 0
+				});
+				Emitter.emit(FRAMES_EVENTS.RESTART);
+			},
+			stop: () => {
+				playStatInput.controller.value.setRawValue(false);
+			}
 		};
+		f.addButton({
+			title: locale['btn.restart']
+		}).on('click', self.restart);
+		f.addButton({
+			title: locale['btn.play']
+		}).on('click', self.play);
+		f.addButton({
+			title: locale['btn.stop']
+		}).on('click', self.stop);
 
-		return {update};
+		// Tweakpane steals Spacebar, override it
+		// fully disable or intercept Spacebar before Tweakpane receives it
+		window.addEventListener('keydown', (e) => {
+			if (e.code === 'Space') {
+				e.preventDefault();
+				e.stopPropagation();
+			}
+		});
+
+		// spacebar toggles play/stop
+		Global.keyboard('space').press = () => {
+			if (state.animationController.play) {
+				self.stop();
+			} else {
+				self.play();
+			}
+		};
 	})();
 
 	const grid = (() => {
 		const frames = getDivElementById('frames');
-		const title = 'Grid';
-		const f = pane.addFolder({
+		const title = locale['grid.title'];
+		const f = page1.addFolder({
 			title,
 			expanded: false
 		});
 
-		const result = DisplayResult(f);
+		const folderNotification = ShowFolderNotification(f);
 		const editMode = EditMode(f, title);
 
 		const self = {
 			set: () => {
 				if (!state.image.src) {
-					WarningPopup({text: getLocale()['warn.viewport_is_empty']});
+					pane.expanded = false;
+					WarningPopup({text: locale['warn.viewport_is_empty']});
 				} else {
 					if (frames.children.length) {
+						pane.expanded = false;
 						WarningPopup({
-							text: getLocale()['warn.will_clear_all_frames'],
+							text: locale['warn.will_clear_all_frames'],
 							onAccept: onAccept.bind(this),
 							onDecline: ()=> {
-								Emitter.emit(GRID_EVENTS.REMOVE);
+								// Emitter.emit(GRID_EVENTS.REMOVE);
 							}
 						});
 					} else {
 						onAccept();
-						result.show();
 					}
 					editMode.hide();
 				}
-			}
+			},
+			reset: () => {
+				Global.set_grid(Global.defaultGrid());
+				refreshInputs();
+				folderNotification.show(locale['info.reset_applied']);
+			},
 		};
 
 		const widthInput = f.addBinding(state.grid, 'width', {
+			label: locale['grid.width'],
 			min: 0,
 			step: 1
 		}).on('change', e => {
@@ -250,6 +299,7 @@ export function MenuGUI() {
 		});
 
 		const heightInput = f.addBinding(state.grid, 'height', {
+			label: locale['grid.height'],
 			min: 0,
 			step: 1
 		}).on('change', e => {
@@ -260,18 +310,36 @@ export function MenuGUI() {
 			}
 		});
 
-		f.addBinding(state.grid, 'link').on('change', ()=> editMode.show());
-		f.addBinding(state.grid, 'isShow').on('change', ()=> editMode.show());
-		f.addBinding(state.grid, 'color').on('change', ()=> editMode.show());
-		f.addBinding(state.grid, 'opacity', {
+		const linkInput = f.addBinding(state.grid, 'link', {
+			label: locale['grid.lock_size']
+		}).on('change', ()=> editMode.show());
+		const showInput = f.addBinding(state.grid, 'visible', {
+			label: locale['grid.visible']
+		}).on('change', ()=> editMode.show());
+		const colorInput = f.addBinding(state.grid, 'color', {
+			label: locale['grid.color']
+		}).on('change', ()=> editMode.show());
+		const opacityInput = f.addBinding(state.grid, 'opacity', {
+			label: locale['grid.opacity'],
 			min: 0,
 			max: 1,
 			step:0.1
 		}).on('change', ()=> editMode.show());
 		f.addButton({
-			title: 'set',
+			title: locale['btn.reset'],
+		}).on('click', self.reset);
+		f.addButton({
+			title: locale['btn.apply'],
 		}).on('click', self.set);
-		result.add();
+
+		function refreshInputs() {
+			widthInput.refresh();
+			heightInput.refresh();
+			linkInput.refresh();
+			showInput.refresh();
+			colorInput.refresh();
+			opacityInput.refresh();
+		}
 
 		function onAccept() {
 			/**
@@ -292,13 +360,13 @@ export function MenuGUI() {
 
 			Emitter.emit(CLEAR_EVENTS.CLEAR);
 
-			if (state.grid.isShow) {
-				Emitter.emit(GRID_EVENTS.CREATE, {
+			if (state.grid.visible) {
+				Emitter.emit(GRID_EVENTS.CREATE, /** @type {import('./events/GridEvents').CreateGridData}*/({
 					width: state.grid.width,
 					height: state.grid.height,
 					imageWidth: state.image.width,
 					imageHeight: state.image.height,
-				});
+				}));
 			}
 
 			Global.set_clear({
@@ -307,230 +375,167 @@ export function MenuGUI() {
 				viewport: backupClearData.viewport,
 				animationController: backupClearData.animationController
 			});
+
+			folderNotification.show();
 		}
 	})();
 
+	const viewport = (() => {
+		const f = page1.addFolder({
+			title: locale['viewport.title'],
+			expanded: false
+		});
+
+		const pz = f.addBinding(state.viewport, 'zoom', {
+			label: locale['viewport.zoom'],
+			min: 0,
+			// step: 0.1
+		}).on('change', e => {
+			Emitter.emit(VIEWPORT_EVENTS.UPDATE_ZOOM, e.value);
+		});
+
+		const px = f.addBinding(state.viewport.pan, 'x', {
+			label: locale['viewport.x'],
+			// step: 0.1,
+		}).on('change', e => {
+			Emitter.emit(VIEWPORT_EVENTS.UPDATE_PAN, {x: e.value});
+		});
+
+		const py = f.addBinding(state.viewport.pan, 'y', {
+			label: locale['viewport.y']
+			// step: 0.1,
+		}).on('change', e => {
+			Emitter.emit(VIEWPORT_EVENTS.UPDATE_PAN, {y: e.value});
+		});
+
+		const update = () => {
+			pz.controller.value.setRawValue(state.viewport.zoom, {forceEmit: false, last: true});
+			px.controller.value.setRawValue(state.viewport.pan.x, {forceEmit: false, last: true});
+			py.controller.value.setRawValue(state.viewport.pan.y, {forceEmit: false, last: true});
+		};
+
+		return {update};
+	})();
+
+	const preview = (() => {
+		const f = page1.addFolder({
+			title: locale['preview.title'],
+			expanded: false
+		});
+
+		const pz = f.addBinding(state.preview, 'zoom', {
+			label: locale['preview.zoom'],
+			min: 0,
+			// step: 0.1
+		}).on('change', e => {
+			Emitter.emit(PREVIEW_EVENTS.UPDATE_ZOOM, e.value);
+		});
+
+		const px = f.addBinding(state.preview.pan, 'x', {
+			label: locale['preview.x']
+			// step: 0.1,
+		}).on('change', e => {
+			Emitter.emit(PREVIEW_EVENTS.UPDATE_PAN, {x: e.value});
+		});
+
+		const py = f.addBinding(state.preview.pan, 'y', {
+			label: locale['preview.y']
+			// step: 0.1,
+		}).on('change', e => {
+			Emitter.emit(PREVIEW_EVENTS.UPDATE_PAN, {y: e.value});
+		});
+
+		const update = () => {
+			pz.controller.value.setRawValue(state.preview.zoom, {forceEmit: false, last: true});
+			px.controller.value.setRawValue(state.preview.pan.x, {forceEmit: false, last: true});
+			py.controller.value.setRawValue(state.preview.pan.y, {forceEmit: false, last: true});
+		};
+
+		return {update};
+	})();
+
+
 	const clear = (() => {
-		const title = 'Clear';
-		const f = pane.addFolder({
+		const title = locale['clear.title'];
+		const f = page1.addFolder({
 			title,
 			expanded: false
 		});
 
 		const editMode = EditMode(f, title);
-		const result = DisplayResult(f);
+		const folderNotification = ShowFolderNotification(f);
 
-		const gridInput = f.addBinding(state.clear, 'grid').on('change', ()=> editMode.show());
-		const viewportInput = f.addBinding(state.clear, 'viewport').on('change', ()=> editMode.show());
-		const framesInput = f.addBinding(state.clear, 'frames').on('change', ()=> editMode.show());
-		const animationControllerInput = f.addBinding(state.clear, 'animationController').on('change', ()=> editMode.show());
-
-		const refreshInputs = () => {
-			gridInput.refresh();
-			viewportInput.refresh();
-			framesInput.refresh();
-			animationControllerInput.refresh();
-		};
-
-		const self = {
-			reset: () => {
-				const defaultValues = Global.defaultClear();
-				for (let key in defaultValues) {
-					state.clear[key] = defaultValues[key];
-				}
-				refreshInputs();
-				editMode.show();
-			},
-			selectAll: () => {
-				state.clear.grid = true;
-				state.clear.viewport = true;
-				state.clear.frames = true;
-				state.clear.animationController = true;
-				refreshInputs();
-				editMode.show();
-			},
-			ok: () => {
-				if (state.clear.grid) {
-					Global.reset('grid');
-				}
-				if (state.clear.animationController) {
-					Global.reset('animationController');
-				}
-				if (state.clear.viewport) {
-					Global.reset('image');
-					Global.reset('preview');
-					Global.reset('viewport');
-				}
-
-				Emitter.emit(CLEAR_EVENTS.CLEAR);
-				result.show();
-				editMode.hide();
-			},
-		};
-
-		f.addButton({
-			title: 'Reset'
-		}).on('click', self.reset);
-		f.addButton({
-			title: 'Select All'
-		}).on('click', self.selectAll);
-		f.addButton({
-			title: 'Ok'
-		}).on('click', self.ok);
-		result.add();
-	})();
-
-	const remember = (() => {
-		const title = 'Remember';
-		const f = pane.addFolder({
-			title,
-			expanded: false
-		});
-
-		const editMode = EditMode(f, title);
-		const result = DisplayResult(f);
-
-		const gridInput = f.addBinding(state.remember, 'grid').on('change', ()=> editMode.show());
-		const viewportInput = f.addBinding(state.remember, 'viewport').on('change', ()=> editMode.show());
-		const previewInput = f.addBinding(state.remember, 'preview').on('change', ()=> editMode.show());
-		const framesInput = f.addBinding(state.remember, 'frames').on('change', ()=> editMode.show());
-		const animationControllerInput = f.addBinding(state.remember, 'animationController').on('change', ()=> editMode.show());
-		const sameFileNameOnlyInput = f.addBinding(state.remember, 'sameFileNameOnly', {
-			label: 'Apply To Same FileName Only'
+		const viewportInput = f.addBinding(state.clear, 'viewport', {
+			label: locale['clear.viewport']
+		}).on('change', ()=> editMode.show());
+		const framesInput = f.addBinding(state.clear, 'frames', {
+			label: locale['clear.frames']
 		}).on('change', ()=> editMode.show());
 
-
-		const refreshInputs = () => {
-			gridInput.refresh();
-			viewportInput.refresh();
-			previewInput.refresh();
-			framesInput.refresh();
-			animationControllerInput.refresh();
-			sameFileNameOnlyInput.refresh();
-		};
-
 		const self = {
-			reset: () => {
-				const defaultValues = Global.defaultRemember();
-				for (let key in defaultValues) {
-					state.remember[key] = defaultValues[key];
-				}
-				refreshInputs();
-				editMode.show();
-			},
-			selectAll: () => {
-				state.remember.grid = true;
-				state.remember.viewport = true;
-				state.remember.preview = true;
-				state.remember.frames = true;
-				state.remember.animationController = true;
-				state.remember.sameFileNameOnly = true;
-				refreshInputs();
-				editMode.show();
-			},
 			ok: () => {
-				if (!state.image.src) {
-					WarningPopup({text: getLocale()['warn.viewport_is_empty']});
-					return;
+				const allowClearance = Boolean([
+					state.clear.viewport,
+					state.clear.frames
+				].filter(val => val).length);
+
+				if (allowClearance) {
+					if (!state.image.src) {
+						pane.expanded = false;
+						WarningPopup({text: locale['warn.viewport_is_empty']});
+					} else {
+						if (state.clear.viewport) {
+							Global.reset('image');
+							Global.reset('preview');
+							Global.reset('viewport');
+						}
+
+						Emitter.emit(CLEAR_EVENTS.CLEAR);
+						folderNotification.show();
+					}
 				} else {
-					result.show();
-					editMode.hide();
+					folderNotification.show(locale['info.nothing_to_clear'], 'warn');
 				}
-			},
-		};
 
-		f.addButton({
-			title: 'Reset'
-		}).on('click', self.reset);
-		f.addButton({
-			title: 'Select All'
-		}).on('click', self.selectAll);
-		f.addButton({
-			title: 'Ok'
-		}).on('click', self.ok);
-		result.add();
-	})();
-
-	const settings = (() => {
-		const title = 'Settings';
-		const f = pane.addFolder({
-			title,
-			expanded: false
-		});
-
-		const editMode = EditMode(f, title);
-		const result = DisplayResult(f);
-		const viewportBgColorInput = f.addBinding(state.settings.viewport, 'backgroundColor', {
-			label: 'Viewport BackgroundColor'
-		}).on('change', ()=> editMode.show());
-		const previewBgColorInput = f.addBinding(state.settings.preview, 'backgroundColor', {
-			label: 'Preview BackgroundColor'
-		}).on('change', ()=> editMode.show());
-		const pixelatedInput = f.addBinding(state.settings.rendering, 'pixelated').on('change', ()=> editMode.show());
-
-		const refreshInputs = () => {
-			viewportBgColorInput.refresh();
-			previewBgColorInput.refresh();
-			pixelatedInput.refresh();
-		};
-
-		const self = {
-			reset: () => {
-				const defaultValues = Global.defaultSettings();
-				state.settings.viewport.backgroundColor = defaultValues.viewport.backgroundColor;
-				state.settings.preview.backgroundColor = defaultValues.preview.backgroundColor;
-				state.settings.rendering.pixelated = defaultValues.rendering.pixelated;
-				refreshInputs();
-				editMode.show();
-			},
-			ok: () => {
-				Emitter.emit(SETTINGS_EVENTS.UPDATE);
-				result.show();
 				editMode.hide();
 			},
 		};
 
 		f.addButton({
-			title: 'Reset'
-		}).on('click', self.reset);
-		f.addButton({
-			title: 'Ok'
+			title: locale['btn.confirm']
 		}).on('click', self.ok);
-		result.add();
 	})();
 
 	const exportMenu = (() => {
 		const frames = getDivElementById('frames');
-		const f = pane.addFolder({
-			title: 'Export',
-			expanded: false
-		});
+		const f = page2;
 		const self = {
 			/**
 			 * @type {import('./Global').ExportFileType}
 			 */
 			fileType: 'PNG Sequences',
-			suffix: '',
-			suffixHelp: {
-				help1: {name: 'Grid width', text: ',w{w}'},
-				help2: {name: 'Grid height', text: ',h{h}'},
-				help3: {name: 'fps', text: ',s{s}'},
+			fileNameTags: '',
+			tagList: {
+				tag1: {name: locale['export.tag.gridWidth'], text: ',w{w}'},
+				tag2: {name: locale['export.tag.gridHeight'], text: ',h{h}'},
+				tag3: {name: locale['export.tag.frameRate'], text: ',s{s}'},
 			},
-			ok: () => {
+			confirm: () => {
 				pane.expanded = false;
 
 				if (!frames.children.length) {
-					WarningPopup({ text: getLocale()['warn.empty_frames'] });
+					pane.expanded = false;
+					WarningPopup({ text: locale['warn.empty_frames'] });
 
 					return;
 				}
 
-				const suffix = (() => {
-					const suffix = self.suffix
+				const fileNameTags = (() => {
+					const tags = self.fileNameTags
 						.replaceAll(/\{\s*w\s*\}/g, String(state.grid.width))
 						.replaceAll(/\{\s*h\s*\}/g, String(state.grid.height))
-						.replaceAll(/\{\s*s\s*\}/g, String(state.animationController.fpsDuration));
-					return suffix;
+						.replaceAll(/\{\s*s\s*\}/g, String(state.animationController.frameRate));
+					return tags;
 				})();
 
 				if (state.exportData.isPNGSequences) {
@@ -539,7 +544,7 @@ export function MenuGUI() {
 					 */
 					const exportPayload = {
 						name: state.exportData.fileName,
-						suffix: '',
+						fileNameTags: '',
 						images: []
 					};
 
@@ -560,8 +565,8 @@ export function MenuGUI() {
 						name: state.exportData.fileName,
 						width: state.grid.width,
 						height: state.grid.height,
-						duration: state.animationController.fpsDuration,
-						suffix,
+						duration: state.animationController.frameRate,
+						fileNameTags,
 						images: []
 					};
 
@@ -582,7 +587,7 @@ export function MenuGUI() {
 						name: state.exportData.fileName,
 						padding: state.exportData.spriteSheetOptions.padding,
 						algorithm: state.exportData.spriteSheetOptions.algorithm,
-						suffix,
+						fileNameTags,
 						images: []
 					};
 
@@ -597,44 +602,49 @@ export function MenuGUI() {
 			},
 		};
 
-		f.addBinding(state.exportData, 'fileName');
-		const suffixInput = f.addBinding(self, 'suffix');
+		f.addBinding(state.exportData, 'fileName' , {
+			label: locale['export.file_name']
+		});
+		const fileNameTagsInput = f.addBinding(self, 'fileNameTags', {
+			label: locale['export.file_name_tags']
+		});
 
-		// suffix how to
+		// filename tags buttons
 		const f1 = f.addFolder({
-			title: 'Suffix List:',
+			title: locale['export.tag.list_title'],
 			expanded: false
 		});
 		f1.addButton({
-			title: self.suffixHelp.help1.name
+			title: self.tagList.tag1.name
 		}).on('click', () => {
-			self.suffix += self.suffixHelp.help1.text;
-			suffixInput.refresh();
+			self.fileNameTags += self.tagList.tag1.text;
+			fileNameTagsInput.refresh();
 		});
 		f1.addButton({
-			title: self.suffixHelp.help2.name
+			title: self.tagList.tag2.name
 		}).on('click', () => {
-			self.suffix += self.suffixHelp.help2.text;
-			suffixInput.refresh();
+			self.fileNameTags += self.tagList.tag2.text;
+			fileNameTagsInput.refresh();
 		});
 		f1.addButton({
-			title: self.suffixHelp.help3.name
+			title: self.tagList.tag3.name
 		}).on('click', () => {
-			self.suffix += self.suffixHelp.help3.text;
-			suffixInput.refresh();
+			self.fileNameTags += self.tagList.tag3.text;
+			fileNameTagsInput.refresh();
 		});
 
-		const showSuffixOptions = () => {
+		const showTagList = () => {
 			f1.hidden = false;
-			suffixInput.hidden = false;
+			fileNameTagsInput.hidden = false;
 		};
 
-		const hideSuffixOptions = () => {
+		const hideTagList = () => {
 			f1.hidden = true;
-			suffixInput.hidden = true;
+			fileNameTagsInput.hidden = true;
 		};
 
 		const fileTypeInput = f.addBinding(self, 'fileType', {
+			label: locale['export.file_type'],
 			// /** @type{import('./Global').ExportFileType[]} */
 			options: {
 				['PNG Sequences']:'PNG Sequences',
@@ -648,21 +658,22 @@ export function MenuGUI() {
 			toggleSpriteSheetOptions();
 
 			if (value === 'PNG Sequences') {
-				hideSuffixOptions();
+				hideTagList();
 			} else {
-				showSuffixOptions();
+				showTagList();
 			}
 		});
 
 		if (fileTypeInput.controller.value.rawValue === 'PNG Sequences') {
-			hideSuffixOptions();
+			hideTagList();
 		}
 
 		// spritesheet options
 		const f2 = f.addFolder({
-			title: 'SpriteSheet',
+			title: locale['export.spritesheet'],
 		});
 		f2.addBinding(state.exportData.spriteSheetOptions, 'algorithm', {
+			label: locale['export.spritesheet_algorithm'],
 			// /** @type{TSpriteSheetAlgorithm[]} */
 			options: {
 				['left-right']: 'left-right',
@@ -674,14 +685,15 @@ export function MenuGUI() {
 		});
 
 		f2.addBinding(state.exportData.spriteSheetOptions, 'padding', {
+			label: locale['export.spritesheet_padding'],
 			min: 0,
 			max: 100,
 			step: 1
 		});
 
 		f.addButton({
-			title: 'Ok'
-		}).on('click', self.ok);
+			title: locale['btn.confirm']
+		}).on('click', self.confirm);
 
 		toggleSpriteSheetOptions();
 
@@ -697,44 +709,175 @@ export function MenuGUI() {
 		}
 	})();
 
-	const extras = (() => {
-		const f = pane.addFolder({
-			title: 'Extras',
+	const remember = (() => {
+		const f = page3.addFolder({
+			title: locale['remember.title'],
 			expanded: false
 		});
+
+		const editMode = EditMode(f, f.title);
+		const folderNotification = ShowFolderNotification(f);
+
+		const gridInput = f.addBinding(state.remember, 'grid', {
+			label: locale['remember.grid']
+		}).on('change', ()=> editMode.show());
+		const viewportInput = f.addBinding(state.remember, 'viewport', {
+			label: locale['remember.preview']
+		}).on('change', ()=> editMode.show());
+		const previewInput = f.addBinding(state.remember, 'preview', {
+			label: locale['remember.preview']
+		}).on('change', ()=> editMode.show());
+		const framesInput = f.addBinding(state.remember, 'frames', {
+			label: locale['remember.frames']
+		}).on('change', ()=> editMode.show());
+		const sameFileNameOnlyInput = f.addBinding(state.remember, 'sameFileNameOnly', {
+			label: locale['remember.sameFileName']
+		}).on('change', ()=> editMode.show());
+
+
+		const refreshInputs = () => {
+			gridInput.refresh();
+			viewportInput.refresh();
+			previewInput.refresh();
+			framesInput.refresh();
+			sameFileNameOnlyInput.refresh();
+		};
+
 		const self = {
-			close: () => {
-				pane.expanded = false;
+			reset: () => {
+				const defaultValues = Global.defaultRemember();
+				for (let key in defaultValues) {
+					state.remember[key] = defaultValues[key];
+				}
+				refreshInputs();
+				self.ok();
+				folderNotification.show(locale['info.reset_applied']);
 			},
-			closeFolders: () => {
-				pane.children.forEach(child => {
-					if (child['expanded']) {
-						child['expanded'] = false;
-					}
-				});
+			ok: () => {
+				folderNotification.show();
+				editMode.hide();
 			},
 		};
 
+		// f.addButton({
+		// 	title: locale['btn.reset']
+		// }).on('click', self.reset);
 		f.addButton({
-			title: 'Toggle Debug Menu'
+			title: locale['btn.apply']
+		}).on('click', self.ok);
+
+	})();
+
+	const interfaceSettings = (() => {
+		const f = page3.addFolder({
+			title: locale['interface_settings.title'],
+			expanded: false
+		});
+
+		const editMode = EditMode(f, f.title);
+		const folderNotification = ShowFolderNotification(f);
+
+		const init = () => {
+			const viewportBgColorInput = f.addBinding(state.settings.viewport, 'backgroundColor', {
+				label: locale['interface_settings.viewport_background_color']
+			}).on('change', ()=> editMode.show());
+
+			const previewBgColorInput = f.addBinding(state.settings.preview, 'backgroundColor', {
+				label: locale['interface_settings.preview_background_color']
+			}).on('change', ()=> editMode.show());
+
+			const framesBgColorInput = f.addBinding(state.settings.framesCollection, 'backgroundColor', {
+				label: locale['interface_settings.frames_background_color']
+			}).on('change', ()=> editMode.show());
+
+			const pixelatedInput = f.addBinding(state.settings.rendering, 'pixelated', {
+				label: locale['interface_settings.rendering_pixelated']
+			}).on('change', ()=> editMode.show());
+
+			const themeInput = f.addBinding(state.settings, 'theme', {
+				label: locale['interface_settings.theme'],
+				/** @type{Record<UITheme, UITheme>}} */
+				options: {
+					Default: 'Default',
+					Iceberg: 'Iceberg',
+					Jetblack: 'Jetblack',
+					Light: 'Light',
+					Retro: 'Retro',
+					Translucent: 'Translucent',
+					Vivid: 'Vivid',
+				},
+			}).on('change', ({ /** @type {UITheme}*/value }) => {
+				setMenuTheme(value);
+			});
+
+			// load default theme
+			setMenuTheme(state.settings.theme);
+
+			const refreshInputs = () => {
+				viewportBgColorInput.refresh();
+				previewBgColorInput.refresh();
+				framesBgColorInput.refresh();
+				pixelatedInput.refresh();
+				themeInput.refresh();
+			};
+
+			const self = {
+				reset: () => {
+					const defaultValues = Global.defaultSettings();
+					state.settings.viewport.backgroundColor = defaultValues.viewport.backgroundColor;
+					state.settings.preview.backgroundColor = defaultValues.preview.backgroundColor;
+					state.settings.framesCollection.backgroundColor = defaultValues.framesCollection.backgroundColor;
+					state.settings.rendering.pixelated = defaultValues.rendering.pixelated;
+					state.settings.theme = defaultValues.theme;
+					refreshInputs();
+					self.ok();
+					editMode.hide();
+					Emitter.emit(SETTINGS_EVENTS.REQUEST_DELETE);
+					folderNotification.show(locale['info.reset_applied']);
+				},
+				ok: () => {
+					Emitter.emit(SETTINGS_EVENTS.UPDATE);
+					folderNotification.show();
+					editMode.hide();
+				},
+				save: () => {
+					Emitter.emit(SETTINGS_EVENTS.REQUEST_SAVE);
+					folderNotification.show(locale['info.settings_saved'], 'warn');
+				},
+			};
+
+			f.addButton({
+				title: locale['btn.reset']
+			}).on('click', self.reset);
+			f.addButton({
+				title: locale['btn.apply']
+			}).on('click', self.ok);
+			f.addButton({
+				title: locale['btn.save']
+			}).on('click', self.save);
+		};
+
+		Emitter.emit(SETTINGS_EVENTS.REQUEST_LOAD);
+		Emitter.on(SETTINGS_EVENTS.REQUEST_LOAD_COMPLETE, init);
+	})();
+
+	const tools = (() => {
+		const f = page4;
+
+		f.addButton({
+			title: locale['tools.align_left']
+		}).on('click', config.alignLeft);
+		f.addButton({
+			title: locale['tools.align_right']
+		}).on('click', config.alignRight);
+		f.addButton({
+			title: locale['tools.align_top_middle']
+		}).on('click', config.alignTopMiddle);
+		f.addButton({
+			title: locale['tools.toggle_debug_menu']
 		}).on('click', ()=> {
 			Emitter.emit(MENU_EVENTS.TOGGLE_APP_MENUBAR);
 		});
-		f.addButton({
-			title: 'Align Left'
-		}).on('click', config.alignLeft);
-		f.addButton({
-			title: 'Align Right'
-		}).on('click', config.alignRight);
-		f.addButton({
-			title: 'Align Top Middle'
-		}).on('click', config.alignTopMiddle);
-		f.addButton({
-			title: 'Close Folders'
-		}).on('click', self.closeFolders);
-		f.addButton({
-			title: 'Close'
-		}).on('click', self.close);
 	})();
 
 	Global.ticker.add('update', () => {
@@ -749,40 +892,90 @@ export function MenuGUI() {
 }
 
 /**
+ * @typedef {(message?: string, color?: NotificationType) => void} ShowNotification
  * @param {FolderApi} folder
- * @param {string} [text]
- * @returns {{show:VoidFunction, add:VoidFunction}}
+ * @returns {{show: ShowNotification}}
  */
-function DisplayResult(folder, text) {
+function ShowFolderNotification(folder) {
 	let timeout;
-	let resultInput;
+	/**
+	 * @type {ButtonApi}
+	 */
+	let notification;
 
-	function add() {
-		resultInput = folder.addButton({
-			title: text ?? 'Applied New Settings!',
+	const defaultMessage = getLocale()['info.selected_settings_appied'];
+
+	create();
+
+	function create() {
+		notification = folder.addButton({
+			title: defaultMessage,
 			hidden: true
 		});
+		notification.controller.buttonController.view.buttonElement.classList.add('folder-notification-success');
 	}
 
-	function show() {
-		if (!resultInput) {
+	/**
+	 * @param {NotificationType} [color] 
+	 * @returns {void}
+	 */
+	function setColor(color='success') {
+		const buttonElement = notification.controller.buttonController.view.buttonElement;
+		const classList = [
+			'folder-notification-warn',
+			'folder-notification-failed',
+			'folder-notification-success',
+		];
+		let className = '';
+
+		switch (color) {
+		case 'warn':
+			className = classList[0];
+			break;
+
+		case 'failed':
+			className = classList[1];
+			break;
+
+		default:
+			className = classList[2];
+			break;
+		}
+
+		classList.forEach(id => {
+			if (buttonElement.classList.contains(id)) {
+				buttonElement.classList.remove(id);
+			}
+		});
+
+		buttonElement.classList.add(className);
+	}
+
+	/**
+	 * @type {ShowNotification} 
+	 */
+	function show(message, color='success') {
+		if (!notification) {
 			return;
 		}
 
+		notification.title = message ?? defaultMessage;
+
+		setColor(color);
+
 		if (timeout) {
 			clearTimeout(timeout);
-			resultInput.hidden = true;
+			notification.hidden = true;
 		}
 
-		resultInput.hidden = false;
+		notification.hidden = false;
 
 		timeout = setTimeout(() => {
-			resultInput.hidden = true;
+			notification.hidden = true;
 		}, 1000);
 	}
 
 	return {
-		add,
 		show,
 	};
 }
@@ -803,3 +996,55 @@ function EditMode(folder, title) {
 	};
 };
 
+
+/**
+ * @param {UITheme} theme 
+ * @returns {void}
+ */
+function setMenuTheme(theme) {
+	/**
+	 * @type {string[]}
+	 */
+	const preset = [
+		'tweakpane-theme-iceberg',
+		'tweakpane-theme-jetblack',
+		'tweakpane-theme-light',
+		'tweakpane-theme-retro',
+		'tweakpane-theme-translucent',
+		'tweakpane-theme-vivid',
+	];
+
+	let currentPreset = '';
+
+	switch (theme) {
+	case 'Iceberg':
+		currentPreset = preset[0];
+		break;
+	case 'Jetblack':
+		currentPreset = preset[1];
+		break;
+	case 'Light':
+		currentPreset = preset[2];
+		break;
+	case 'Retro':
+		currentPreset = preset[3];
+		break;
+	case 'Translucent':
+		currentPreset = preset[4];
+		break;
+	case 'Vivid':
+		currentPreset = preset[5];
+		break;
+	}
+
+	preset.forEach(id => {
+		if (root.classList.contains(id)) {
+			root.classList.remove(id);
+		}
+	});
+
+	if (currentPreset) {
+		root.classList.add(currentPreset);
+	}
+
+}
