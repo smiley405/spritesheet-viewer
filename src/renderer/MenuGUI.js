@@ -1,3 +1,4 @@
+import * as EssentialsPlugin from '@tweakpane/plugin-essentials';
 import {ButtonApi, FolderApi, Pane, TabPageApi} from 'tweakpane';
 
 import { Emitter } from './Emitter';
@@ -25,6 +26,11 @@ export function MenuGUI() {
 		title: 'Menu',
 		expanded: false,
 	});
+
+	/**
+	 * @see https://github.com/tweakpane/plugin-essentials
+	 */
+	pane.registerPlugin(EssentialsPlugin);
 
 	const tab = pane.addTab({
 		pages: [
@@ -218,15 +224,35 @@ export function MenuGUI() {
 				playStatInput.controller.value.setRawValue(false);
 			}
 		};
-		f.addButton({
-			title: locale['btn.restart']
-		}).on('click', self.restart);
-		f.addButton({
-			title: locale['btn.play']
-		}).on('click', self.play);
-		f.addButton({
-			title: locale['btn.stop']
-		}).on('click', self.stop);
+
+		/**
+		 * @see https://github.com/tweakpane/plugin-essentials
+		 */
+		f.addBlade({
+			view: 'buttongrid',
+			size: [3, 1],
+			cells: (x, y) => ({
+				title: [
+					[locale['btn.restart'], locale['btn.play'], locale['btn.stop']],
+				][y][x],
+			}),
+			label: 'Controls',
+		}).on('click', (ev) => {
+			// console.log(ev);
+			const id = ev.index.toString();
+
+			switch (id) {
+			case '0,0':
+				self.restart();
+				break;
+			case '1,0':
+				self.play();
+				break;
+			case '2,0':
+				self.stop();
+				break;
+			}
+		});
 
 		// Tweakpane steals Spacebar, override it
 		// fully disable or intercept Spacebar before Tweakpane receives it
