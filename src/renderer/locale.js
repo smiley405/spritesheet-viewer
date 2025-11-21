@@ -88,6 +88,7 @@ export function getLocale() {
 		'remember.sameFileName': 'Apply To Same FileName Only',
 
 		'tools.toggle_debug_menu': 'Toggle Debug Menu',
+		'tools.align_title': 'Alignment',
 		'tools.align_left': 'Align Left',
 		'tools.align_right': 'Align Right',
 		'tools.align_top_middle': 'Align Top Middle',

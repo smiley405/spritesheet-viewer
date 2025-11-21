@@ -88,7 +88,7 @@ export function MenuGUI() {
 	config.init();
 
 	const commonOptions = () => {
-		const pages = [page1, page2, page3];
+		const pages = [page1, page2, page3, page4];
 		/**
 		 * @param {TabPageApi} page
 		 * @returns {void}
@@ -454,58 +454,6 @@ export function MenuGUI() {
 		return {update};
 	})();
 
-
-	const clear = (() => {
-		const title = locale['clear.title'];
-		const f = page1.addFolder({
-			title,
-			expanded: false
-		});
-
-		const editMode = EditMode(f, title);
-		const folderNotification = ShowFolderNotification(f);
-
-		const viewportInput = f.addBinding(state.clear, 'viewport', {
-			label: locale['clear.viewport']
-		}).on('change', ()=> editMode.show());
-		const framesInput = f.addBinding(state.clear, 'frames', {
-			label: locale['clear.frames']
-		}).on('change', ()=> editMode.show());
-
-		const self = {
-			ok: () => {
-				const allowClearance = Boolean([
-					state.clear.viewport,
-					state.clear.frames
-				].filter(val => val).length);
-
-				if (allowClearance) {
-					if (!state.image.src) {
-						pane.expanded = false;
-						WarningPopup({text: locale['warn.viewport_is_empty']});
-					} else {
-						if (state.clear.viewport) {
-							Global.reset('image');
-							Global.reset('preview');
-							Global.reset('viewport');
-						}
-
-						Emitter.emit(CLEAR_EVENTS.CLEAR);
-						folderNotification.show();
-					}
-				} else {
-					folderNotification.show(locale['info.nothing_to_clear'], 'warn');
-				}
-
-				editMode.hide();
-			},
-		};
-
-		f.addButton({
-			title: locale['btn.confirm']
-		}).on('click', self.ok);
-	})();
-
 	const exportMenu = (() => {
 		const frames = getDivElementById('frames');
 		const f = page2;
@@ -861,8 +809,61 @@ export function MenuGUI() {
 		Emitter.on(SETTINGS_EVENTS.REQUEST_LOAD_COMPLETE, init);
 	})();
 
-	const tools = (() => {
-		const f = page4;
+	const clear = (() => {
+		const f = page4.addFolder({
+			title: locale['clear.title'],
+			expanded: false
+		});
+
+		const editMode = EditMode(f, f.title);
+		const folderNotification = ShowFolderNotification(f);
+
+		const viewportInput = f.addBinding(state.clear, 'viewport', {
+			label: locale['clear.viewport']
+		}).on('change', ()=> editMode.show());
+		const framesInput = f.addBinding(state.clear, 'frames', {
+			label: locale['clear.frames']
+		}).on('change', ()=> editMode.show());
+
+		const self = {
+			ok: () => {
+				const allowClearance = Boolean([
+					state.clear.viewport,
+					state.clear.frames
+				].filter(val => val).length);
+
+				if (allowClearance) {
+					if (!state.image.src) {
+						pane.expanded = false;
+						WarningPopup({text: locale['warn.viewport_is_empty']});
+					} else {
+						if (state.clear.viewport) {
+							Global.reset('image');
+							Global.reset('preview');
+							Global.reset('viewport');
+						}
+
+						Emitter.emit(CLEAR_EVENTS.CLEAR);
+						folderNotification.show();
+					}
+				} else {
+					folderNotification.show(locale['info.nothing_to_clear'], 'warn');
+				}
+
+				editMode.hide();
+			},
+		};
+
+		f.addButton({
+			title: locale['btn.confirm']
+		}).on('click', self.ok);
+	})();
+
+	const alignTool = (() => {
+		const f = page4.addFolder({
+			title: locale['tools.align_title'],
+			expanded: false
+		});
 
 		f.addButton({
 			title: locale['tools.align_left']
@@ -873,6 +874,11 @@ export function MenuGUI() {
 		f.addButton({
 			title: locale['tools.align_top_middle']
 		}).on('click', config.alignTopMiddle);
+	})();
+
+	const tools = (() => {
+		const f = page4;
+
 		f.addButton({
 			title: locale['tools.toggle_debug_menu']
 		}).on('click', ()=> {
