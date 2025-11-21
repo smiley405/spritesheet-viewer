@@ -722,7 +722,7 @@ export function MenuGUI() {
 			label: locale['remember.grid']
 		}).on('change', ()=> editMode.show());
 		const viewportInput = f.addBinding(state.remember, 'viewport', {
-			label: locale['remember.preview']
+			label: locale['remember.viewport']
 		}).on('change', ()=> editMode.show());
 		const previewInput = f.addBinding(state.remember, 'preview', {
 			label: locale['remember.preview']
