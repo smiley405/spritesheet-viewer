@@ -6,8 +6,6 @@ import { VIEWPORT_EVENTS } from './events/ViewportEvents';
 import { Global } from './Global';
 import { createPanzoom, getDivElementById, toPx } from './utils';
 
-export const DEFAULT_VIEWPORT_CANVAS_SCALE = 2;
-
 export function Viewport() {
 	/**
 	 * @type {HTMLCanvasElement}
@@ -74,9 +72,8 @@ export function Viewport() {
 		canvas.width = imageWidth;
 		canvas.height = imageHeight;
 
-		const z = 1;
-		canvas.style.width = toPx(imageWidth*z);
-		canvas.style.height = toPx(imageHeight*z);
+		canvas.style.width = toPx(imageWidth);
+		canvas.style.height = toPx(imageHeight);
 
 		ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
 

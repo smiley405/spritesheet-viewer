@@ -1,6 +1,5 @@
 import { Emitter } from '@renderer/Emitter';
 import { CLEAR_EVENTS } from '@renderer/events/ClearEvents';
-import { SETTINGS_EVENTS } from '@renderer/events/SettingsEvents';
 import { VIEWPORT_EVENTS } from '@renderer/events/ViewportEvents';
 import { Global } from '@renderer/Global';
 import { getDivElementById, toPx } from '@renderer/utils';
@@ -18,7 +17,7 @@ export function Grids() {
 	let ctx = null;
 	let gridWidth = Global.state.grid.width;
 	let gridHeight = Global.state.grid.height;
-
+	let gridDrawn = false;
 	const containerDiv = getDivElementById('viewport');
 
 	createCanvas();
@@ -27,7 +26,7 @@ export function Grids() {
 	Emitter.on(GRID_EVENTS.REMOVE, onRemoveGrid.bind(this));
 	Emitter.on(CLEAR_EVENTS.CLEAR, onClear.bind(this));
 	Emitter.on(VIEWPORT_EVENTS.CREATED, onViewportCreated.bind(this));
-	Emitter.on(SETTINGS_EVENTS.UPDATE, onUpdateSettings.bind(this));
+	Emitter.on(GRID_EVENTS.UPDATE_SETTINGS, onUpdateGridSettings.bind(this));
 
 	function createCanvas() {
 		canvas = document.createElement('canvas');
@@ -37,53 +36,73 @@ export function Grids() {
 	}
 
 	function create(width=0, height=0, imageWidth=0, imageHeight=0) {
-		const size = 1;
-		const color = Global.state.grid.color;
 		const totalX = imageWidth / width;
 		const totalY = imageHeight / height;
 		gridWidth = width;
 		gridHeight = height;
+		gridDrawn = true;
 
 		Global.set_grid({totalX, totalY});
 
 		destroy();
-
-		const z = 2;
-
-		canvas.width = imageWidth*z;
-		canvas.height = imageHeight*z;
-
-		canvas.style.width = toPx(imageWidth/2);
-		canvas.style.height = toPx(imageHeight/2);
-
-		ctx.fillStyle = color;
-
-		// vertical lines
-		for (let i = 1; i < imageWidth*z; i ++) {
-			if (i % (gridWidth*z) == 0) {
-				ctx.fillRect(i - 1, 0, size, imageHeight*z);
-			}
-		}
-
-		// horizontal lines
-		for (let j = 1; j < imageHeight*z; j ++) {
-			if (j % (gridWidth*z)== 0) {
-				ctx.fillRect(0, j - 1, imageWidth*z, size);
-			}
-		}
-
-		ctx.drawImage(canvas, 0, 0);
-		// scale and center
-		canvas.style.opacity = String(Global.state.grid.opacity);
-		canvas.style.transform = 'scale(2)';
-		canvas.style.transformOrigin = 'left top';
+		updateGrid(imageWidth, imageHeight);
 
 		Emitter.emit(GRID_EVENTS.CREATE_HIT_BOXES);
 	}
 
+	function updateGrid(imageWidth=0, imageHeight=0) {
+		if (!gridDrawn) {
+			return;
+		}
+
+		const scale = getCanvasScale();
+		clearCanvas();
+
+		// scaleup > draw grid and scale down to preserve the crispness relative to 1px-line thickness when zooming-in
+		canvas.width = imageWidth * scale;
+		canvas.height = imageHeight * scale;
+		canvas.style.width = toPx(imageWidth);
+		canvas.style.height = toPx(imageHeight);
+		drawGrid(scale);
+		canvas.style.opacity = String(Global.state.grid.opacity);
+		canvas.style.display = Global.state.grid.visible ? 'block' : 'none';
+	}
+
+	function drawGrid(scale=1) {
+		ctx.fillStyle = String(Global.state.grid.color);
+
+		// vertical lines
+		for (let i = 1; i < canvas.width; i ++) {
+			if (i % (gridWidth * scale) == 0) {
+				ctx.fillRect(i, 0, 1, canvas.height);
+			}
+		}
+
+		// horizontal lines
+		for (let j = 1; j < canvas.height; j ++) {
+			if (j % (gridHeight * scale)== 0) {
+				ctx.fillRect(0, j, canvas.width, 1);
+			}
+		}
+	}
+
+	function getCanvasScale() {
+		// values from 0.1 to 1
+		const lineThickness = Array.from({ length: 10 }, (_, i) => (i + 1)/10);
+		// values from 10 to 1
+		const scaleValues = Array.from({ length: 10 }, (_, i) => 10-(i * 1));
+		const thicknessIndex = lineThickness.indexOf(Global.state.grid.lineThickness);
+		const scale = scaleValues[thicknessIndex];
+		return scale;
+	}
+
+	function clearCanvas() {
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+	}
+
 	function destroy() {
 		if (canvas && canvas.parentNode) {
-			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			clearCanvas();
 			Emitter.emit(GRID_EVENTS.DESTROY);
 		}
 	}
@@ -97,7 +116,7 @@ export function Grids() {
 
 	function onRemoveGrid() {
 		destroy();
-		Global.set_grid({visible: false});
+		Global.set_grid({ visible: false });
 	}
 
 	function onClear() {
@@ -112,11 +131,7 @@ export function Grids() {
 		}
 	}
 
-	function onUpdateSettings() {
-		if (ctx && Global.state.grid.color) {
-			ctx.fillStyle = Global.state.grid.color;
-		}
-
-		containerDiv.style.display = Global.state.grid.visible ? 'block' : 'none';
+	function onUpdateGridSettings() {
+		updateGrid(Global.state.image.width, Global.state.image.height);
 	}
 }

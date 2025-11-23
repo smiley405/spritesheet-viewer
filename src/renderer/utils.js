@@ -199,3 +199,15 @@ export function hitTestPoint(pt, rect) {
 	return hit;
 
 }
+
+
+/**
+ * Truncate a number to a fixed number of decimal places (no rounding).
+ * @param {number} num - The number to truncate.
+ * @param {number} decimals - How many decimal places to keep.
+ * @returns {number} The truncated number.
+ */
+export function truncateDecimals(num, decimals) {
+	const factor = Math.pow(10, decimals);
+	return Math.floor(num * factor) / factor;
+}

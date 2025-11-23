@@ -1,6 +1,7 @@
 import { ERROE_CODE } from './const';
 import { Emitter } from './Emitter';
 import { GENERAL_EVENTS } from './events/GeneralEvents';
+import { GRID_EVENTS } from './events/GridEvents';
 import { MENU_EVENTS } from './events/MenuEvents';
 import { SETTINGS_EVENTS } from './events/SettingsEvents';
 import { UPLOADER_EVENTS } from './events/UploaderEvents';
@@ -57,6 +58,27 @@ export function IPCRenderer() {
 			Emitter.emit(SETTINGS_EVENTS.UPDATE);
 		}
 		Emitter.emit(SETTINGS_EVENTS.REQUEST_LOAD_COMPLETE);
+	});
+
+	Emitter.on(GRID_EVENTS.REQUEST_SAVE, () => {
+		state.saveRecord({id: 'grid', value: Global.state.grid});
+	});
+
+	Emitter.on(GRID_EVENTS.REQUEST_DELETE, () => {
+		state.deleteRecord({id: 'grid'});
+	});
+
+	Emitter.on(GRID_EVENTS.REQUEST_LOAD, async() => {
+		/**
+		 * @type {import('./Global').GridGlobalData}
+		 */
+		const grid = await state.getRecord({id: 'grid'});
+
+		if (grid) {
+			Global.set_grid(grid);
+			Emitter.emit(GRID_EVENTS.UPDATE_SETTINGS);
+		}
+		Emitter.emit(GRID_EVENTS.REQUEST_LOAD_COMPLETE);
 	});
 
 	state.updateImage((e, imgSrc) => {

@@ -61,10 +61,13 @@ export function getLocale() {
 		'grid.title': 'Grid',
 		'grid.width': 'Width',
 		'grid.height': 'Height',
-		'grid.color': 'Color',
-		'grid.visible': 'Visible',
-		'grid.opacity': 'Opacity',
 		'grid.lock_size': 'Lock Size',
+
+		'grid_appearance.title': 'Grid Appearance',
+		'grid_appearance.color': 'Color',
+		'grid_appearance.visible': 'Visible',
+		'grid_appearance.opacity': 'Opacity',
+		'grid_appearance.line_thickness': 'Line Thickness',
 
 		'clear.title': 'Clear',
 		'clear.viewport': 'Viewport',

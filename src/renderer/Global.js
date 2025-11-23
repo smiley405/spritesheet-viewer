@@ -12,7 +12,17 @@ import { msToFPS } from './utils';
  */
 
 /**
- * @typedef {{width?: number, height?: number, prevWidth?: number, prevHeight?: number, totalX?: number, totalY?: number, link?: boolean} & SettingsGridGlobalData} GridGlobalData
+ * @typedef {{
+ * width?: number,
+ * height?: number,
+ * prevWidth?: number,
+ * prevHeight?: number,
+ * totalX?: number,
+ * totalY?: number,
+ * link?: boolean,
+ * lineThickness?: number // 0.1 to 1
+ * } & SettingsGridGlobalData
+ * } GridGlobalData
  */
 
 /**
@@ -128,6 +138,10 @@ function CreateGlobal() {
 			height: h,
 			prevWidth: 8,
 			prevHeight: 8,
+			/**
+			 * Represents the thickness of grid lines -> 0.1 to 1
+			 */
+			lineThickness: 0.9,
 			totalX: 0,
 			totalY: 0,
 			visible: true,

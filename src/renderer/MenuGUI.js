@@ -13,7 +13,7 @@ import { VIEWPORT_EVENTS } from './events/ViewportEvents';
 import { Global } from './Global';
 import { getLocale } from './locale';
 import { WarningPopup } from './popup/WarningPopup';
-import { formatValue, fpsToMs, getDivElementById, msToFPS, toPx } from './utils';
+import { formatValue, fpsToMs, getDivElementById, msToFPS, toPx, truncateDecimals } from './utils';
 
 // :root is the <html> element
 const root = document.documentElement;
@@ -339,18 +339,6 @@ export function MenuGUI() {
 		const linkInput = f.addBinding(state.grid, 'link', {
 			label: locale['grid.lock_size']
 		}).on('change', ()=> editMode.show());
-		const showInput = f.addBinding(state.grid, 'visible', {
-			label: locale['grid.visible']
-		}).on('change', ()=> editMode.show());
-		const colorInput = f.addBinding(state.grid, 'color', {
-			label: locale['grid.color']
-		}).on('change', ()=> editMode.show());
-		const opacityInput = f.addBinding(state.grid, 'opacity', {
-			label: locale['grid.opacity'],
-			min: 0,
-			max: 1,
-			step:0.1
-		}).on('change', ()=> editMode.show());
 		f.addButton({
 			title: locale['btn.reset'],
 		}).on('click', self.reset);
@@ -362,9 +350,6 @@ export function MenuGUI() {
 			widthInput.refresh();
 			heightInput.refresh();
 			linkInput.refresh();
-			showInput.refresh();
-			colorInput.refresh();
-			opacityInput.refresh();
 		}
 
 		function onAccept() {
@@ -386,14 +371,12 @@ export function MenuGUI() {
 
 			Emitter.emit(CLEAR_EVENTS.CLEAR);
 
-			if (state.grid.visible) {
-				Emitter.emit(GRID_EVENTS.CREATE, /** @type {import('./events/GridEvents').CreateGridData}*/({
-					width: state.grid.width,
-					height: state.grid.height,
-					imageWidth: state.image.width,
-					imageHeight: state.image.height,
-				}));
-			}
+			Emitter.emit(GRID_EVENTS.CREATE, /** @type {import('./events/GridEvents').CreateGridData}*/({
+				width: state.grid.width,
+				height: state.grid.height,
+				imageWidth: state.image.width,
+				imageHeight: state.image.height,
+			}));
 
 			Global.set_clear({
 				grid: backupClearData.grid,
@@ -740,6 +723,85 @@ export function MenuGUI() {
 			title: locale['btn.apply']
 		}).on('click', self.ok);
 
+	})();
+
+	const gridAppearance = (() => {
+		const f = page3.addFolder({
+			title: locale['grid_appearance.title'],
+			expanded: false
+		});
+
+		const folderNotification = ShowFolderNotification(f);
+		const editMode = EditMode(f, f.title);
+
+		const init = () => {
+			const showInput = f.addBinding(state.grid, 'visible', {
+				label: locale['grid_appearance.visible']
+			}).on('change', ()=> editMode.show());
+			const colorInput = f.addBinding(state.grid, 'color', {
+				label: locale['grid_appearance.color']
+			}).on('change', ()=> editMode.show());
+			const opacityInput = f.addBinding(state.grid, 'opacity', {
+				label: locale['grid_appearance.opacity'],
+				min: 0,
+				max: 1,
+				step:0.1
+			}).on('change', ()=> editMode.show());
+			const lineThicknessInput = f.addBinding(state.grid, 'lineThickness', {
+				label: locale['grid_appearance.line_thickness'],
+				min: 0.1,
+				max: 1,
+				step: 0.1
+			}).on('change', (data)=> {
+				state.grid.lineThickness = truncateDecimals(data.value, 1);
+				editMode.show();
+			});
+
+			function refreshInputs() {
+				showInput.refresh();
+				colorInput.refresh();
+				opacityInput.refresh();
+				lineThicknessInput.refresh();
+			}
+
+			const self = {
+				reset: () => {
+					const defaultValues = Global.defaultGrid();
+					state.grid.color = defaultValues.color;
+					state.grid.opacity = defaultValues.opacity;
+					state.grid.visible = defaultValues.visible;
+					state.grid.lineThickness = defaultValues.lineThickness;
+					refreshInputs();
+					self.ok();
+					editMode.hide();
+					Emitter.emit(GRID_EVENTS.REQUEST_DELETE);
+					folderNotification.show(locale['info.reset_applied']);
+				},
+				ok: () => {
+					Emitter.emit(GRID_EVENTS.UPDATE_SETTINGS);
+					editMode.hide();
+					folderNotification.show();
+					editMode.hide();
+				},
+				save: () => {
+					Emitter.emit(GRID_EVENTS.REQUEST_SAVE);
+					folderNotification.show(locale['info.settings_saved'], 'warn');
+				},
+			};
+
+			f.addButton({
+				title: locale['btn.reset']
+			}).on('click', self.reset);
+			f.addButton({
+				title: locale['btn.apply']
+			}).on('click', self.ok);
+			f.addButton({
+				title: locale['btn.save']
+			}).on('click', self.save);
+		};
+
+		Emitter.emit(GRID_EVENTS.REQUEST_LOAD);
+		Emitter.on(GRID_EVENTS.REQUEST_LOAD_COMPLETE, init);
 	})();
 
 	const interfaceSettings = (() => {
