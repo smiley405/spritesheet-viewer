@@ -73,8 +73,8 @@ export function GridHitBoxes() {
 	 */
 	let mouseRectBounds;
 	let currentGrid = {
-		width: Global.state.grid.width,
-		height: Global.state.grid.height,
+		width: Global.state.grid.layout.width,
+		height: Global.state.grid.layout.height,
 	};
 
 	Emitter.on(FRAMES_EVENTS.CLICK, onClickFrame.bind(this));
@@ -124,15 +124,15 @@ export function GridHitBoxes() {
 		} else {
 			destroy();
 
-			const totalX = Global.state.grid.totalX;
-			const totalY = Global.state.grid.totalY;
-			const gridWidth = Global.state.grid.width;
-			const gridHeight = Global.state.grid.height;
+			const totalX = Global.state.grid.layout.totalX;
+			const totalY = Global.state.grid.layout.totalY;
+			const gridWidth = Global.state.grid.layout.width;
+			const gridHeight = Global.state.grid.layout.height;
 
 			// re-update prev grid dimensions
-			Global.set_grid({
-				prevWidth: Global.state.grid.width,
-				prevHeight: Global.state.grid.height,
+			Global.set_grid_layout({
+				prevWidth: Global.state.grid.layout.width,
+				prevHeight: Global.state.grid.layout.height,
 			});
 
 			canvas.width = Global.state.image.width;

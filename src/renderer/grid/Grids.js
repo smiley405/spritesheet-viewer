@@ -15,8 +15,8 @@ export function Grids() {
 	 * @type {CanvasRenderingContext2D}
 	 */
 	let ctx = null;
-	let gridWidth = Global.state.grid.width;
-	let gridHeight = Global.state.grid.height;
+	let gridWidth = Global.state.grid.layout.width;
+	let gridHeight = Global.state.grid.layout.height;
 	let gridDrawn = false;
 	const containerDiv = getDivElementById('viewport');
 
@@ -42,7 +42,7 @@ export function Grids() {
 		gridHeight = height;
 		gridDrawn = true;
 
-		Global.set_grid({totalX, totalY});
+		Global.set_grid_layout({totalX, totalY});
 
 		destroy();
 		updateGrid(imageWidth, imageHeight);
@@ -64,12 +64,12 @@ export function Grids() {
 		canvas.style.width = toPx(imageWidth);
 		canvas.style.height = toPx(imageHeight);
 		drawGrid(scale);
-		canvas.style.opacity = String(Global.state.grid.opacity);
-		canvas.style.display = Global.state.grid.visible ? 'block' : 'none';
+		canvas.style.opacity = String(Global.state.grid.appearance.opacity);
+		canvas.style.display = Global.state.grid.appearance.visible ? 'block' : 'none';
 	}
 
 	function drawGrid(scale=1) {
-		ctx.fillStyle = String(Global.state.grid.color);
+		ctx.fillStyle = String(Global.state.grid.appearance.color);
 
 		// vertical lines
 		for (let i = 1; i < canvas.width; i ++) {
@@ -91,7 +91,7 @@ export function Grids() {
 		const lineThickness = Array.from({ length: 10 }, (_, i) => (i + 1)/10);
 		// values from 10 to 1
 		const scaleValues = Array.from({ length: 10 }, (_, i) => 10-(i * 1));
-		const thicknessIndex = lineThickness.indexOf(Global.state.grid.lineThickness);
+		const thicknessIndex = lineThickness.indexOf(Global.state.grid.appearance.lineThickness);
 		const scale = scaleValues[thicknessIndex];
 		return scale;
 	}
@@ -116,7 +116,7 @@ export function Grids() {
 
 	function onRemoveGrid() {
 		destroy();
-		Global.set_grid({ visible: false });
+		Global.set_grid_appearance({ visible: false });
 	}
 
 	function onClear() {
@@ -126,8 +126,8 @@ export function Grids() {
 	}
 
 	function onViewportCreated() {
-		if (Global.state.grid.visible || Global.state.remember.grid) {
-			onCreateGrid({width: Global.state.grid.width, height: Global.state.grid.height, imageWidth: Global.state.image.width, imageHeight: Global.state.image.height});
+		if (Global.state.grid.appearance.visible || Global.state.remember.grid) {
+			onCreateGrid({width: Global.state.grid.layout.width, height: Global.state.grid.layout.height, imageWidth: Global.state.image.width, imageHeight: Global.state.image.height});
 		}
 	}
 

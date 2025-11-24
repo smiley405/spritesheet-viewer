@@ -20,9 +20,20 @@ import { msToFPS } from './utils';
  * totalX?: number,
  * totalY?: number,
  * link?: boolean,
+ * }} GridLayoutGlobalData
+ */
+
+/**
+ * @typedef {{
+ * visible?: boolean,
+ * color?: string,
+ * opacity?: number
  * lineThickness?: number // 0.1 to 1
- * } & SettingsGridGlobalData
- * } GridGlobalData
+ * }} GridAppearanceGlobalData
+ */
+
+/**
+ * @typedef {{layout: GridLayoutGlobalData, appearance: GridAppearanceGlobalData}} GridGlobalData
  */
 
 /**
@@ -61,10 +72,6 @@ import { msToFPS } from './utils';
 
 /**
  * @typedef {{backgroundColor: string}} SettingsPreviewGlobalData
- */
-
-/**
- * @typedef {{visible?: boolean, color?: string, opacity?: number}} SettingsGridGlobalData
  */
 
 /**
@@ -126,10 +133,18 @@ function CreateGlobal() {
 			version: ''
 		};
 	}
+
 	/**
 	 * @returns {GridGlobalData}
 	 */
 	function defaultGrid() {
+		return {layout: defaultGridLayout(), appearance: defaultGridAppearance()};
+	}
+
+	/**
+	 * @returns {GridLayoutGlobalData}
+	 */
+	function defaultGridLayout() {
 		const w = 8;
 		const h = 8;
 
@@ -138,17 +153,25 @@ function CreateGlobal() {
 			height: h,
 			prevWidth: 8,
 			prevHeight: 8,
+			totalX: 0,
+			totalY: 0,
+			link: true,
+		};
+	}
+
+	/**
+	 * @returns {GridAppearanceGlobalData}
+	 */
+	function defaultGridAppearance() {
+		return {
 			/**
 			 * Represents the thickness of grid lines -> 0.1 to 1
 			 */
 			lineThickness: 0.9,
-			totalX: 0,
-			totalY: 0,
 			visible: true,
 			color: '#ccc4dd',
 			opacity: 0.4,
-			link: true
-		};	
+		};
 	}
 
 	/**
@@ -343,10 +366,17 @@ function CreateGlobal() {
 		},
 
 		/**
-		 * @param {GridGlobalData} data
+		 * @param {Partial<GridAppearanceGlobalData>} data
 		 */
-		set_grid(data) {
-			mutate_object(state.grid, data);
+		set_grid_appearance(data) {
+			mutate_object(state.grid.appearance, data);
+		},
+
+		/**
+		 * @param {Partial<GridLayoutGlobalData>} data
+		 */
+		set_grid_layout(data) {
+			mutate_object(state.grid.layout, data);
 		},
 
 		/**
@@ -399,12 +429,12 @@ function CreateGlobal() {
 		},
 
 		didGridDimensionsChange() {
-			return !(Global.state.grid.prevWidth === Global.state.grid.width && Global.state.grid.prevHeight === Global.state.grid.height);
+			return !(Global.state.grid.layout.prevWidth === Global.state.grid.layout.width && Global.state.grid.layout.prevHeight === Global.state.grid.layout.height);
 		},
 
 		is_first_fresh_image_loaded() {
 			return (
-				state.image.pervFileName === '' && state.image.currentFileName 
+				state.image.pervFileName === '' && state.image.currentFileName
 			);
 		},
 		is_same_image_reloaded() {
@@ -431,6 +461,8 @@ function CreateGlobal() {
 		defaultRemember,
 		defaultSettings,
 		defaultGrid,
+		defaultGridAppearance,
+		defaultGridLayout,
 	};
 }
 

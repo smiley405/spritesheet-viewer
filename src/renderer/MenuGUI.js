@@ -306,37 +306,37 @@ export function MenuGUI() {
 				}
 			},
 			reset: () => {
-				Global.set_grid(Global.defaultGrid());
+				Global.set_grid_layout(Global.defaultGridLayout());
 				refreshInputs();
 				folderNotification.show(locale['info.reset_applied']);
 			},
 		};
 
-		const widthInput = f.addBinding(state.grid, 'width', {
+		const widthInput = f.addBinding(state.grid.layout, 'width', {
 			label: locale['grid.width'],
 			min: 0,
 			step: 1
 		}).on('change', e => {
 			editMode.show();
-			if (state.grid.link) {
-				state.grid.height = e.value;
+			if (state.grid.layout.link) {
+				state.grid.layout.height = e.value;
 				heightInput.refresh();
 			}
 		});
 
-		const heightInput = f.addBinding(state.grid, 'height', {
+		const heightInput = f.addBinding(state.grid.layout, 'height', {
 			label: locale['grid.height'],
 			min: 0,
 			step: 1
 		}).on('change', e => {
 			editMode.show();
-			if (state.grid.link) {
-				state.grid.width = e.value;
+			if (state.grid.layout.link) {
+				state.grid.layout.width = e.value;
 				widthInput.refresh();
 			}
 		});
 
-		const linkInput = f.addBinding(state.grid, 'link', {
+		const linkInput = f.addBinding(state.grid.layout, 'link', {
 			label: locale['grid.lock_size']
 		}).on('change', ()=> editMode.show());
 		f.addButton({
@@ -372,8 +372,8 @@ export function MenuGUI() {
 			Emitter.emit(CLEAR_EVENTS.CLEAR);
 
 			Emitter.emit(GRID_EVENTS.CREATE, /** @type {import('./events/GridEvents').CreateGridData}*/({
-				width: state.grid.width,
-				height: state.grid.height,
+				width: state.grid.layout.width,
+				height: state.grid.layout.height,
 				imageWidth: state.image.width,
 				imageHeight: state.image.height,
 			}));
@@ -489,8 +489,8 @@ export function MenuGUI() {
 
 				const fileNameTags = (() => {
 					const tags = self.fileNameTags
-						.replaceAll(/\{\s*w\s*\}/g, String(state.grid.width))
-						.replaceAll(/\{\s*h\s*\}/g, String(state.grid.height))
+						.replaceAll(/\{\s*w\s*\}/g, String(state.grid.layout.width))
+						.replaceAll(/\{\s*h\s*\}/g, String(state.grid.layout.height))
 						.replaceAll(/\{\s*s\s*\}/g, String(state.animationController.frameRate));
 					return tags;
 				})();
@@ -520,8 +520,8 @@ export function MenuGUI() {
 					 */
 					const exportPayload = {
 						name: state.exportData.fileName,
-						width: state.grid.width,
-						height: state.grid.height,
+						width: state.grid.layout.width,
+						height: state.grid.layout.height,
 						duration: state.animationController.frameRate,
 						fileNameTags,
 						images: []
@@ -735,25 +735,28 @@ export function MenuGUI() {
 		const editMode = EditMode(f, f.title);
 
 		const init = () => {
-			const showInput = f.addBinding(state.grid, 'visible', {
+			const showInput = f.addBinding(state.grid.appearance, 'visible', {
 				label: locale['grid_appearance.visible']
 			}).on('change', ()=> editMode.show());
-			const colorInput = f.addBinding(state.grid, 'color', {
+			const colorInput = f.addBinding(state.grid.appearance, 'color', {
 				label: locale['grid_appearance.color']
 			}).on('change', ()=> editMode.show());
-			const opacityInput = f.addBinding(state.grid, 'opacity', {
+			const opacityInput = f.addBinding(state.grid.appearance, 'opacity', {
 				label: locale['grid_appearance.opacity'],
 				min: 0,
 				max: 1,
 				step:0.1
-			}).on('change', ()=> editMode.show());
-			const lineThicknessInput = f.addBinding(state.grid, 'lineThickness', {
+			}).on('change', (data)=> {
+				state.grid.appearance.opacity = truncateDecimals(data.value, 1);
+				editMode.show();
+			});
+			const lineThicknessInput = f.addBinding(state.grid.appearance, 'lineThickness', {
 				label: locale['grid_appearance.line_thickness'],
 				min: 0.1,
 				max: 1,
 				step: 0.1
 			}).on('change', (data)=> {
-				state.grid.lineThickness = truncateDecimals(data.value, 1);
+				state.grid.appearance.lineThickness = truncateDecimals(data.value, 1);
 				editMode.show();
 			});
 
@@ -766,11 +769,7 @@ export function MenuGUI() {
 
 			const self = {
 				reset: () => {
-					const defaultValues = Global.defaultGrid();
-					state.grid.color = defaultValues.color;
-					state.grid.opacity = defaultValues.opacity;
-					state.grid.visible = defaultValues.visible;
-					state.grid.lineThickness = defaultValues.lineThickness;
+					Global.set_grid_appearance(Global.defaultGridAppearance());
 					refreshInputs();
 					self.ok();
 					editMode.hide();

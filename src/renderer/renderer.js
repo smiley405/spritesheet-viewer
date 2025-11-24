@@ -75,7 +75,7 @@ export function IPCRenderer() {
 		const grid = await state.getRecord({id: 'grid'});
 
 		if (grid) {
-			Global.set_grid(grid);
+			Global.set_grid_appearance(grid.appearance);
 			Emitter.emit(GRID_EVENTS.UPDATE_SETTINGS);
 		}
 		Emitter.emit(GRID_EVENTS.REQUEST_LOAD_COMPLETE);
