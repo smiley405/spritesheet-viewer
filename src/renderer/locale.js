@@ -12,6 +12,7 @@ export function getLocale() {
 		'info.reset_applied': 'Reset applied',
 		'info.settings_saved': 'Settings saved',
 		'info.nothing_to_clear': 'Nothing to Clear',
+		'info.controls': 'Controls',
 
 		'btn.cancel': 'Cancel',
 		'btn.ok': 'Ok',
@@ -90,6 +91,8 @@ export function getLocale() {
 		'remember.frames': 'Frames',
 		'remember.sameFileName': 'Apply To Same FileName Only',
 
+		'frames.title': 'Frames',
+
 		'tools.toggle_debug_menu': 'Toggle Debug Menu',
 		'tools.align_title': 'Alignment',
 		'tools.align_left': 'Align Left',
@@ -99,9 +102,10 @@ export function getLocale() {
 		'tools.close_menu': 'Close Menu',
 
 		'interface_settings.title': 'Interface',
-		'interface_settings.viewport_background_color': 'Viewport Background Color',
-		'interface_settings.preview_background_color': 'Preview Background Color',
-		'interface_settings.frames_background_color': 'Frames Background Color',
+		'interface_settings.background_color': 'Background Color',
+		'interface_settings.background_opacity': 'Background Opacity',
+		'interface_settings.border_color': 'Border Color',
+		'interface_settings.border_width': 'Border Width',
 		'interface_settings.rendering_pixelated': 'Image Rendering Pixelated',
 		'interface_settings.theme': 'Theme',
 		'interface_settings.viewport_live_update_active_frames': 'Viewport: Live update on selected frames',

@@ -314,6 +314,17 @@ export function PreviewFrames() {
 		} else {
 			previewDiv.classList.remove('pixel-rendering');
 		}
+
+		if (Global.state.settings.preview.backgroundOpacity !== undefined) {
+			previewDiv.style.backgroundColor = hexToRgba(Global.state.settings.preview.backgroundColor, Global.state.settings.preview.backgroundOpacity);
+		}
+
+		if (Global.state.settings.preview.borderColor !== undefined) {
+			previewDiv.style.borderColor = String(Global.state.settings.preview.borderColor);
+		}
+		if (Global.state.settings.preview.borderWidth !== undefined) {
+			previewDiv.style.borderWidth = toPx(Global.state.settings.preview.borderWidth);
+		}
 	}
 
 	/**

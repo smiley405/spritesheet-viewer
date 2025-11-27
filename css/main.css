@@ -154,7 +154,7 @@ html {
 	overflow: hidden;
 	width: 100px;
 	height: 100px;
-	border: 2px solid navajowhite;
+	border-style: solid;
 	padding: 5px;
 }
 

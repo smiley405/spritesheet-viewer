@@ -236,7 +236,7 @@ export function MenuGUI() {
 					[locale['btn.restart'], locale['btn.play'], locale['btn.stop']],
 				][y][x],
 			}),
-			label: 'Controls',
+			label: locale['info.controls'],
 		}).on('click', (ev) => {
 			// console.log(ev);
 			const id = ev.index.toString();
@@ -813,18 +813,58 @@ export function MenuGUI() {
 		const folderNotification = ShowFolderNotification(f);
 
 		const init = () => {
-			const viewportBgColorInput = f.addBinding(state.settings.viewport, 'backgroundColor', {
-				label: locale['interface_settings.viewport_background_color']
+			// viewport
+			const f1 = f.addFolder({
+				title: locale['viewport.title'],
+				expanded: false
+			});
+			const viewportBgColorInput = f1.addBinding(state.settings.viewport, 'backgroundColor', {
+				label: locale['interface_settings.background_color']
 			}).on('change', ()=> editMode.show());
 
-			const previewBgColorInput = f.addBinding(state.settings.preview, 'backgroundColor', {
-				label: locale['interface_settings.preview_background_color']
+			// preview
+			const f2 = f.addFolder({
+				title: locale['preview.title'],
+				expanded: false
+			});
+			const previewBgColorInput = f2.addBinding(state.settings.preview, 'backgroundColor', {
+				label: locale['interface_settings.background_color'],
 			}).on('change', ()=> editMode.show());
 
-			const framesBgColorInput = f.addBinding(state.settings.framesCollection, 'backgroundColor', {
-				label: locale['interface_settings.frames_background_color']
+			const opacityInput = f2.addBinding(state.settings.preview, 'backgroundOpacity', {
+				label: locale['interface_settings.background_opacity'],
+				min: 0,
+				max: 1,
+				step:0.1
+			}).on('change', (data)=> {
+				state.settings.preview.backgroundOpacity = truncateDecimals(data.value, 1);
+				editMode.show();
+			});
+
+			const previewBorderColorInput = f2.addBinding(state.settings.preview, 'borderColor', {
+				label: locale['interface_settings.border_color'],
 			}).on('change', ()=> editMode.show());
 
+			const previewBorderWidthInput = f2.addBinding(state.settings.preview, 'borderWidth', {
+				label: locale['interface_settings.border_width'],
+				min: 0,
+				max: 10,
+				step:0.1
+			}).on('change', (data)=> {
+				state.settings.preview.borderWidth = truncateDecimals(data.value, 1);
+				editMode.show();
+			});
+
+			// frames
+			const f3 = f.addFolder({
+				title: locale['frames.title'],
+				expanded: false
+			});
+			const framesBgColorInput = f3.addBinding(state.settings.framesCollection, 'backgroundColor', {
+				label: locale['interface_settings.background_color']
+			}).on('change', ()=> editMode.show());
+
+			// others
 			const pixelatedInput = f.addBinding(state.settings.rendering, 'pixelated', {
 				label: locale['interface_settings.rendering_pixelated']
 			}).on('change', ()=> editMode.show());
@@ -973,14 +1013,14 @@ export function MenuGUI() {
 		});
 	})();
 
-	Global.ticker.add('update', () => {
+	Global.ticker.add(() => {
 		update();
-		config.update();
 	});
 
 	function update() {
 		viewport.update();
 		preview.update();
+		config.update();
 	}
 }
 
@@ -1009,7 +1049,7 @@ function ShowFolderNotification(folder) {
 	}
 
 	/**
-	 * @param {NotificationType} [color] 
+	 * @param {NotificationType} [color]
 	 * @returns {void}
 	 */
 	function setColor(color='success') {
@@ -1045,7 +1085,7 @@ function ShowFolderNotification(folder) {
 	}
 
 	/**
-	 * @type {ShowNotification} 
+	 * @type {ShowNotification}
 	 */
 	function show(message, color='success') {
 		if (!notification) {
@@ -1091,7 +1131,7 @@ function EditMode(folder, title) {
 
 
 /**
- * @param {UITheme} theme 
+ * @param {UITheme} theme
  * @returns {void}
  */
 function setMenuTheme(theme) {

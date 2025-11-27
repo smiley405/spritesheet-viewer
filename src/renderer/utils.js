@@ -160,7 +160,7 @@ export function fpsToMs(fps) {
  * - formatValue(e.value);       // Default: 2 decimals
  * - formatValue(e.value, 3);   // 3 decimal places
  * - formatValue(e.value, 0);   // Rounded to integer
- * @param {number} value 
+ * @param {number} value
  * @param {number} [ decimals ] - default to 2
  * @returns {number}
  */
@@ -210,4 +210,30 @@ export function hitTestPoint(pt, rect) {
 export function truncateDecimals(num, decimals) {
 	const factor = Math.pow(10, decimals);
 	return Math.floor(num * factor) / factor;
+}
+
+/**
+ * @param {string} hex - hex color format
+ * @param {number} [alpha]
+ * @example
+ * hexToRgba('#454545', 0.4)
+ * Output: "rgba(69, 69, 69, 0.4)"
+ * @returns {string}
+ */
+export function hexToRgba(hex, alpha = 1) {
+	// Remove leading "#" if present
+	hex = hex.replace(/^#/, '');
+
+	// Handle shorthand hex (#abc to #aabbcc)
+	if (hex.length === 3) {
+		hex = hex.split('').map(char => char + char).join('');
+	}
+
+	// Parse r, g, b values
+	const bigint = parseInt(hex, 16);
+	const r = (bigint >> 16) & 255;
+	const g = (bigint >> 8) & 255;
+	const b = bigint & 255;
+
+	return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }

@@ -71,7 +71,11 @@ import { msToFPS } from './utils';
  */
 
 /**
- * @typedef {{backgroundColor: string}} SettingsPreviewGlobalData
+ * @typedef {{backgroundColor: string}} SettingsViewportGlobalData
+ */
+
+/**
+ * @typedef {{backgroundColor: string, backgroundOpacity?: number, borderWidth?: number, borderColor?: string}} SettingsPreviewGlobalData
  */
 
 /**
@@ -79,7 +83,7 @@ import { msToFPS } from './utils';
  */
 
 /**
- * @typedef {{viewport: SettingsPreviewGlobalData, preview: SettingsPreviewGlobalData, framesCollection: SettingsPreviewGlobalData, rendering: SettingsRenderingGlobalData, theme: UITheme}} SettingsGlobalData
+ * @typedef {{viewport: SettingsViewportGlobalData, preview: SettingsPreviewGlobalData, framesCollection: SettingsViewportGlobalData, rendering: SettingsRenderingGlobalData, theme: UITheme}} SettingsGlobalData
  */
 
 /**
@@ -286,6 +290,9 @@ function CreateGlobal() {
 			},
 			preview: {
 				backgroundColor: '#454545',
+				backgroundOpacity: 1,
+				borderColor: '#ffdead',
+				borderWidth: 2,
 			},
 			framesCollection: {
 				backgroundColor: '#383838',
