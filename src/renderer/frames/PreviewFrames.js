@@ -10,6 +10,19 @@ import gsap from 'gsap';
 
 import { FRAMES_EVENTS } from '../events/FramesEvents';
 
+
+/**
+ * @typedef {{
+ * from: {x: number, y: number},
+ * to: {x: number, y: number},
+ * duration: number,
+ * yoyo: boolean,
+ * repeat: boolean,
+ * playing: boolean,
+ * ease: string,
+ * }} AnimatePreviewWindowProps
+ */
+
 /**
  * @typedef {import('@renderer/grid/GridHitBoxes').THitBox} TFrame
  */
@@ -353,6 +366,10 @@ export function PreviewFrames() {
 		panzoom.pan(pan.x ?? panzoom.getPan().x, pan.y ?? panzoom.getPan().y);
 	}
 
+	/**
+	 * @param {AnimatePreviewWindowProps} props
+	 * @returns {void}
+	 */
 	function onStartWindowAnimation(props) {
 		killWindowTween();
 		windowTween = gsap.to(props.from, {

@@ -964,7 +964,9 @@ export function MenuGUI() {
 			},
 		};
 
-		// gsap tween properties
+		/**
+		 * @type {import('./frames/PreviewFrames').AnimatePreviewWindowProps}
+		 */
 		const props =  {
 			from: {x: 0, y: 0},
 			to: {x: 0, y: 0},
