@@ -831,7 +831,7 @@ export function MenuGUI() {
 				label: locale['interface_settings.background_color'],
 			}).on('change', ()=> editMode.show());
 
-			const opacityInput = f2.addBinding(state.settings.preview, 'backgroundOpacity', {
+			const previewBgOpacityInput = f2.addBinding(state.settings.preview, 'backgroundOpacity', {
 				label: locale['interface_settings.background_opacity'],
 				min: 0,
 				max: 1,
@@ -891,6 +891,9 @@ export function MenuGUI() {
 			const refreshInputs = () => {
 				viewportBgColorInput.refresh();
 				previewBgColorInput.refresh();
+				previewBgOpacityInput.refresh();
+				previewBorderColorInput.refresh();
+				previewBorderWidthInput.refresh();
 				framesBgColorInput.refresh();
 				pixelatedInput.refresh();
 				themeInput.refresh();
@@ -901,6 +904,9 @@ export function MenuGUI() {
 					const defaultValues = Global.defaultSettings();
 					state.settings.viewport.backgroundColor = defaultValues.viewport.backgroundColor;
 					state.settings.preview.backgroundColor = defaultValues.preview.backgroundColor;
+					state.settings.preview.backgroundOpacity = defaultValues.preview.backgroundOpacity;
+					state.settings.preview.borderColor = defaultValues.preview.borderColor;
+					state.settings.preview.borderWidth = defaultValues.preview.borderWidth;
 					state.settings.framesCollection.backgroundColor = defaultValues.framesCollection.backgroundColor;
 					state.settings.rendering.pixelated = defaultValues.rendering.pixelated;
 					state.settings.theme = defaultValues.theme;
