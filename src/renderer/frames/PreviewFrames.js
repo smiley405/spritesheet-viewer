@@ -5,7 +5,7 @@ import { SETTINGS_EVENTS } from '@renderer/events/SettingsEvents';
 import { UPLOADER_EVENTS } from '@renderer/events/UploaderEvents';
 import { VIEWPORT_EVENTS } from '@renderer/events/ViewportEvents';
 import { Global } from '@renderer/Global';
-import { createPanzoom, getDivElementById } from '@renderer/utils';
+import { createPanzoom, getDivElementById, hexToRgba, toPx } from '@renderer/utils';
 import gsap from 'gsap';
 
 import { FRAMES_EVENTS } from '../events/FramesEvents';
@@ -43,6 +43,11 @@ export function PreviewFrames() {
 	let playing = true;
 	let currentFrame = null;
 
+	/**
+	 * @type {gsap.core.Tween | null}
+	 */
+	let windowTween = null;
+
 	canvas.setAttribute('class', 'preview-frame-image');
 	previewDiv.appendChild(canvas);
 
@@ -53,6 +58,8 @@ export function PreviewFrames() {
 	Emitter.on(SETTINGS_EVENTS.UPDATE, onUpdateSettings.bind(this));
 	Emitter.on(PREVIEW_EVENTS.UPDATE_ZOOM, onUpdateZoom.bind(this));
 	Emitter.on(PREVIEW_EVENTS.UPDATE_PAN, onUpdatePan.bind(this));
+	Emitter.on(PREVIEW_EVENTS.START_WINDOW_ANIMATION, onStartWindowAnimation.bind(this));
+	Emitter.on(PREVIEW_EVENTS.STOP_WINDOW_ANIMATION, onStopWindowAnimation.bind(this));
 
 	Emitter.on(GRID_EVENTS.SELECT_AREA, onSelectGridArea.bind(this));
 	Emitter.on(GRID_EVENTS.DESELECT_AREA, onDeselectGridArea.bind(this));
@@ -103,7 +110,7 @@ export function PreviewFrames() {
 		ctx.drawImage(cachedViewportImage, currentFrame.x, currentFrame.y, currentFrame.width, currentFrame.height, 0, 0, currentFrame.width, currentFrame.height);
 
 		Emitter.emit(FRAMES_EVENTS.UPDATE, /** @type {import('../events/FramesEvents').UpdateFrameData} */ ({ activeFrameIndex: currentFrameIndex, id: currentFrame.id }));
-	} 
+	}
 
 	function update() {
 		updateProps();
@@ -266,6 +273,11 @@ export function PreviewFrames() {
 		resetAnimation();
 	}
 
+	function killWindowTween() {
+		windowTween?.kill();
+		windowTween = null;
+	}
+
 	function onRestartFrames() {
 		setCurrentFrameIndex(Global.state.preview.activeFrameIndex);
 		render();
@@ -339,5 +351,25 @@ export function PreviewFrames() {
 	 */
 	function onUpdatePan(pan) {
 		panzoom.pan(pan.x ?? panzoom.getPan().x, pan.y ?? panzoom.getPan().y);
+	}
+
+	function onStartWindowAnimation(props) {
+		killWindowTween();
+		windowTween = gsap.to(props.from, {
+			duration: props.duration,
+			ease: props.ease,
+			x: props.to.x,
+			y: props.to.y,
+			yoyo: props.yoyo,
+			repeat: props.repeat ? -1 : 0,
+			onUpdate: () => {
+				panzoom.pan(props.from.x, props.from.y);
+			}
+		});
+
+	}
+
+	function onStopWindowAnimation() {
+		killWindowTween();
 	}
 }

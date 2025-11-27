@@ -13,7 +13,7 @@ import { VIEWPORT_EVENTS } from './events/ViewportEvents';
 import { Global } from './Global';
 import { getLocale } from './locale';
 import { WarningPopup } from './popup/WarningPopup';
-import { formatValue, fpsToMs, getDivElementById, msToFPS, toPx, truncateDecimals } from './utils';
+import { copyObject, formatValue, fpsToMs, getDivElementById, msToFPS, toPx, truncateDecimals } from './utils';
 
 // :root is the <html> element
 const root = document.documentElement;
@@ -934,6 +934,168 @@ export function MenuGUI() {
 
 		Emitter.emit(SETTINGS_EVENTS.REQUEST_LOAD);
 		Emitter.on(SETTINGS_EVENTS.REQUEST_LOAD_COMPLETE, init);
+	})();
+
+	const animatePreviewWindow = (() => {
+		// Animation targets the outer window only
+		// Good for testing the animation quickly, like the movement etc
+
+		// gsap easing properties
+		const easing = {
+			currentType: 'none',
+			types: {
+				none: 'none',
+				power1: 'power1',
+				power2: 'power2',
+				power3: 'power3',
+				power4: 'power4',
+				back: 'back',
+				bounce: 'bounce',
+				circ: 'circ',
+				elastic: 'elastic',
+				expo: 'expo',
+				sine: 'sine',
+			},
+			currentDirection: 'out',
+			directions: {
+				in: 'in',
+				inOUt: 'inOut',
+				out: 'out'
+			},
+		};
+
+		// gsap tween properties
+		const props =  {
+			from: {x: 0, y: 0},
+			to: {x: 0, y: 0},
+			duration: 1,
+			yoyo: true,
+			repeat: true,
+			playing: false,
+			ease: '',
+		};
+
+		const f = page4.addFolder({
+			title: locale['animate_preview_window.title'],
+			expanded: false
+		});
+
+		const f1 = f.addFolder({
+			title: locale['animate_preview_window.from'],
+			expanded: false
+		});
+
+		const f2 = f.addFolder({
+			title: locale['animate_preview_window.to'],
+			expanded: false
+		});
+
+		const px1 = f1.addBinding(props.from, 'x', {
+			label: locale['preview.x'],
+		});
+
+		const py1 = f1.addBinding(props.from, 'y', {
+			label: locale['preview.y'],
+		});
+
+		f1.addButton({
+			title: locale['animate_preview_window.capture_position'],
+		}).on('click', () => {
+			px1.controller.value.setRawValue(state.preview.pan.x);
+			py1.controller.value.setRawValue(state.preview.pan.y);
+		});
+
+		const px2 = f2.addBinding(props.to, 'x', {
+			label: locale['preview.x'],
+		});
+
+		const py2 = f2.addBinding(props.to, 'y', {
+			label: locale['preview.y'],
+		});
+
+		f2.addButton({
+			title: locale['animate_preview_window.capture_position'],
+		}).on('click', () => {
+			px2.controller.value.setRawValue(state.preview.pan.x);
+			py2.controller.value.setRawValue(state.preview.pan.y);
+		});
+
+		const duration = f.addBinding(props, 'duration', {
+			label: locale['animate_preview_window.duration']
+		});
+
+		const repeat = f.addBinding(props, 'repeat', {
+			label: locale['animate_preview_window.repeat'],
+		});
+
+		const yoyo = f.addBinding(props, 'yoyo', {
+			label: locale['animate_preview_window.yoyo'],
+		});
+
+		const easeType = f.addBinding(easing, 'currentType', {
+			label: locale['animate_preview_window.ease_type'],
+			options: easing.types
+		}).on('change', ({ value }) => {
+			easeDirection.hidden = value === 'none';
+		});
+
+		const easeDirection = f.addBinding(easing, 'currentDirection', {
+			label: locale['animate_preview_window.ease_duration'],
+			options: easing.directions,
+			hidden: easing.currentType === 'none'
+		});
+
+
+		const playStatInput = f.addBinding(props, 'playing', {
+			label: locale['animate_preview_window.playing'],
+			disabled: true,
+		});
+
+		function getCurrentEasing() {
+			if (easing.currentType === 'none') {
+				return easing.currentType;
+			}
+			return `${easing.currentType}.${easing.currentDirection}`;
+		}
+
+		function start() {
+			props.ease = getCurrentEasing();
+			const _props = copyObject(props);
+			playStatInput.controller.value.setRawValue(true);
+			Emitter.emit(PREVIEW_EVENTS.START_WINDOW_ANIMATION, _props);
+			console.log(_props.ease);
+		}
+
+		function stop() {
+			playStatInput.controller.value.setRawValue(false);
+			Emitter.emit(PREVIEW_EVENTS.STOP_WINDOW_ANIMATION);
+		}
+
+		/**
+		 * @see https://github.com/tweakpane/plugin-essentials
+		 */
+		f.addBlade({
+			view: 'buttongrid',
+			size: [2, 1],
+			cells: (x, y) => ({
+				title: [
+					[locale['btn.run'], locale['btn.stop']],
+				][y][x],
+			}),
+			label: locale['info.controls'],
+		}).on('click', (ev) => {
+			// console.log(ev);
+			const id = ev.index.toString();
+
+			switch (id) {
+			case '0,0':
+				start();
+				break;
+			case '1,0':
+				stop();
+				break;
+			}
+		});
 	})();
 
 	const clear = (() => {
