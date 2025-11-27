@@ -32,7 +32,9 @@ export function FramesCollection() {
 	Emitter.on(UPLOADER_EVENTS.IMAGE_LOADED, destroy.bind(this));
 	Emitter.on(VIEWPORT_EVENTS.CREATED, onCreateViewport.bind(this));
 
-	Global.ticker.add('update', tick.bind(this));
+	Global.ticker.add(() => {
+		tick();
+	});
 
 	/**
 	 * @param {import('@renderer/events/ViewportEvents').CreateViewportData} data

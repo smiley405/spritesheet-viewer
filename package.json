@@ -38,6 +38,7 @@
 		"file-saver": "^2.0.5",
 		"fs-extra": "^11.3.2",
 		"glob": "^11.0.3",
+		"gsap": "^3.13.0",
 		"mime": "^4.1.0",
 		"spritesmith": "^3.5.1",
 		"tweakpane": "^4.0.5"

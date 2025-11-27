@@ -26,7 +26,7 @@ export function Store(state) {
 
 	const observers = {};
 
-	Global.ticker.add('update', ()=> {
+	Global.ticker.add(()=> {
 		for (let key in observers) {
 			if (obj[key] !== state[key]) {
 				set(key, state[key]);

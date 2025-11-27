@@ -6,6 +6,7 @@ import { UPLOADER_EVENTS } from '@renderer/events/UploaderEvents';
 import { VIEWPORT_EVENTS } from '@renderer/events/ViewportEvents';
 import { Global } from '@renderer/Global';
 import { createPanzoom, getDivElementById } from '@renderer/utils';
+import gsap from 'gsap';
 
 import { FRAMES_EVENTS } from '../events/FramesEvents';
 
@@ -58,8 +59,10 @@ export function PreviewFrames() {
 	Emitter.on(GRID_EVENTS.DESTROY, destroy.bind(this));
 	Emitter.on(VIEWPORT_EVENTS.CREATED, onCreateViewport.bind(this));
 
-	Global.ticker.add('update', update.bind(this));
-	Global.ticker.add('render', render.bind(this));
+	Global.ticker.add(() => {
+		update();
+		render();
+	});
 
 	setTimeout(() => panzoom.pan(Global.defaultPreview().pan.x, Global.defaultPreview().pan.y));
 
@@ -102,10 +105,7 @@ export function PreviewFrames() {
 		Emitter.emit(FRAMES_EVENTS.UPDATE, /** @type {import('../events/FramesEvents').UpdateFrameData} */ ({ activeFrameIndex: currentFrameIndex, id: currentFrame.id }));
 	} 
 
-	/**
-	 * @param {number} dt 
-	 */
-	function update(dt) {
+	function update() {
 		updateProps();
 
 		if (!frames.size || !playing) {
@@ -116,6 +116,9 @@ export function PreviewFrames() {
 			self.stop();
 			return;
 		}
+
+		// GSAP gives us deltaRatio relative to 60fps
+		const dt = gsap.ticker.deltaRatio() / 60;
 
 		accumulator += dt;
 
@@ -136,7 +139,7 @@ export function PreviewFrames() {
 	}
 
 	/**
-	 * @param {number} [ frameIndex ] 
+	 * @param {number} [ frameIndex ]
 	 */
 	function stop(frameIndex) {
 		setCurrentFrameIndex(frameIndex);

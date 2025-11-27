@@ -43,7 +43,9 @@ export function Viewport() {
 		}
 	});
 
-	Global.ticker.add('update', tick.bind(this));
+	Global.ticker.add(() => {
+		tick();
+	});
 
 	onUpdateSettings();
 

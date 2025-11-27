@@ -83,7 +83,9 @@ export function GridHitBoxes() {
 	Emitter.on(GRID_EVENTS.DESTROY, destroy.bind(this));
 	Emitter.on(FRAMES_EVENTS.UPDATE, onUpdateFrame.bind(this));
 
-	Global.ticker.add('render', render.bind(this));
+	Global.ticker.add(() => {
+		render();
+	});
 
 	interaction();
 
