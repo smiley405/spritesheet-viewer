@@ -1063,7 +1063,6 @@ export function MenuGUI() {
 			const _props = copyObject(props);
 			playStatInput.controller.value.setRawValue(true);
 			Emitter.emit(PREVIEW_EVENTS.START_WINDOW_ANIMATION, _props);
-			console.log(_props.ease);
 		}
 
 		function stop() {
