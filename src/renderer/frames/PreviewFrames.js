@@ -372,6 +372,8 @@ export function PreviewFrames() {
 	 */
 	function onStartWindowAnimation(props) {
 		killWindowTween();
+		const currentZoom = panzoom.getScale();
+
 		windowTween = gsap.to(props.from, {
 			duration: props.duration,
 			ease: props.ease,
@@ -380,7 +382,9 @@ export function PreviewFrames() {
 			yoyo: props.yoyo,
 			repeat: props.repeat ? -1 : 0,
 			onUpdate: () => {
-				panzoom.pan(props.from.x, props.from.y);
+				// lock pan and zoom with force values
+				panzoom.pan(props.from.x, props.from.y, {force: true});
+				panzoom.zoom(currentZoom, {force: true});
 			}
 		});
 
