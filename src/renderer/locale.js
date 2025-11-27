@@ -131,6 +131,7 @@ export function getLocale() {
 		'help.export' : 'FFmpeg installation is required to export GIFs and is only needed for local development (npm run dev)',
 		'help.remember': 'Go to Menu → Reapply on Image Load to automatically apply the current settings to images you load during this session.',
 		'help.toogle_play' : 'Press the Spacebar to play or pause.',
-		'help.cycle_frames' : 'There are three ways to navigate selected frames:<br> 1) Click on an individual frame from the frame collection.<br> 2) Press the "Z" key and Left Click on frames in the viewport.<br> 3) Use the Left Arrow key to move to the previous frame, and the Right Arrow key to move to the next frame.',
+		'help.cycle_frames' : 'There are different ways to navigate selected frames:<br> 1) Click on an individual frame from the frame collection.<br> 2) Press the "Z" key and Left Click on frames in the viewport.<br> 3) Use the Left Arrow key to move to the previous frame, and the Right Arrow key to move to the next frame.',
+		'help.animate_preview_window' : 'Animate the entire preview window by setting its start and end positions along with tween properties. Use Run or Stop to control and preview the window animation. Access via Menu → Tools → Animate Preview Window.',
 	};
 }

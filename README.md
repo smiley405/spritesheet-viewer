@@ -24,6 +24,7 @@ So, to fill that gap, I wrote this tool.
 - **Keyboard Controls:** Spacebar to play/pause, arrow keys to navigate frames.
 - **Settings Memory:** Save your settings for future uploads.
 - **FFmpeg Integration:** Export GIFs directly (FFmpeg included in container builds).
+- **Animate Preview Window:** Animates the entire preview window itself. Useful for quickly testing how the animation behaves as if it were integrated into the game.
 
 ---
 
@@ -46,10 +47,12 @@ Download ready-to-use builds from the [Releases](https://github.com/smiley405/sp
 - **Play/Pause:** Spacebar
 - **Reapply on Image Load:** Use **Menu → Reapply on Image Load** to automatically apply your selected settings to images you load during this session.
 - **Export GIFs:** FFmpeg is required (included in container builds)
-- **Frame Navigation:**
+- **Frame Navigation:** Navigate between frames using any of the following methods:
   1. Click a frame in the collection
-  2. Press `Z` and Left Click in the viewport
-  3. Use `←` and `→` arrow keys
+  2. Press `Z` and Left‑Click in the viewport
+  3. Use the `←` and `→` arrow keys
+- **Animate Preview Window:** Access via **Menu → Tools → Animate Preview Window**.
+  Animate the entire preview window by setting its start and end positions along with tween properties. Use **Run** or **Stop** to control and preview the window animation.
 
 ---
 
@@ -124,4 +127,5 @@ Ready-to-distribute builds for Windows and Linux.
 - [tweakpane](https://github.com/cocopon/tweakpane) — Menu UI
 - [panzoom](https://github.com/timmywil/panzoom) — Viewport drag & pan
 - [FFmpeg](https://github.com/FFmpeg/FFmpeg) — GIF export (bundled in container; install manually if building outside)
+- [GSAP](https://github.com/greensock/GSAP) — Starting with v1.2.0, GSAP is used for the ticker and other animation features.
 

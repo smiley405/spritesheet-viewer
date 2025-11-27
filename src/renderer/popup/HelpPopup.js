@@ -52,6 +52,7 @@ export function HelpPopup() {
 			getLocale()['help.remember'],
 			getLocale()['help.toogle_play'],
 			getLocale()['help.cycle_frames'],
+			getLocale()['help.animate_preview_window'],
 			getLocale()['help.export']
 		]);
 		basePopup.create(menu);
