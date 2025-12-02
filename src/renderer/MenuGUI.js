@@ -275,7 +275,7 @@ export function MenuGUI() {
 
 	const grid = (() => {
 		const frames = getDivElementById('frames');
-		const title = locale['grid.title'];
+		const title = locale['grid_layout.title'];
 		const f = page1.addFolder({
 			title,
 			expanded: false
@@ -284,109 +284,143 @@ export function MenuGUI() {
 		const folderNotification = ShowFolderNotification(f);
 		const editMode = EditMode(f, title);
 
-		const self = {
-			set: () => {
-				if (!state.image.src) {
-					pane.expanded = false;
-					WarningPopup({text: locale['warn.viewport_is_empty']});
-				} else {
-					if (frames.children.length) {
+		const init = () => {
+			const self = {
+				set: () => {
+					if (!state.image.src) {
 						pane.expanded = false;
-						WarningPopup({
-							text: locale['warn.will_clear_all_frames'],
-							onAccept: onAccept.bind(this),
-							onDecline: ()=> {
-								// Emitter.emit(GRID_EVENTS.REMOVE);
-							}
-						});
+						WarningPopup({text: locale['warn.viewport_is_empty']});
 					} else {
-						onAccept();
+						if (frames.children.length) {
+							pane.expanded = false;
+							WarningPopup({
+								text: locale['warn.will_clear_all_frames'],
+								onAccept: onAccept.bind(this),
+								onDecline: ()=> {
+									// Emitter.emit(GRID_EVENTS.REMOVE);
+								}
+							});
+						} else {
+							onAccept();
+						}
+						editMode.hide();
 					}
-					editMode.hide();
+				},
+				reset: () => {
+					Global.set_grid_layout(Global.defaultGridLayout());
+					Emitter.emit(GRID_EVENTS.REQUEST_DELETE_LAYOUT);
+					refreshInputs();
+					folderNotification.show(locale['info.reset_applied']);
+				},
+				save: () => {
+					self.set();
+					Emitter.emit(GRID_EVENTS.REQUEST_SAVE_LAYOUT);
+					folderNotification.show(locale['info.settings_saved'], 'warn');
 				}
-			},
-			reset: () => {
-				Global.set_grid_layout(Global.defaultGridLayout());
-				refreshInputs();
-				folderNotification.show(locale['info.reset_applied']);
-			},
+			};
+
+			const widthInput = f.addBinding(state.grid.layout, 'width', {
+				label: locale['grid_layout.width'],
+				min: 0,
+				step: 1
+			}).on('change', e => {
+				editMode.show();
+				if (state.grid.layout.link) {
+					state.grid.layout.height = e.value;
+					heightInput.refresh();
+				}
+			});
+
+			const heightInput = f.addBinding(state.grid.layout, 'height', {
+				label: locale['grid_layout.height'],
+				min: 0,
+				step: 1
+			}).on('change', e => {
+				editMode.show();
+				if (state.grid.layout.link) {
+					state.grid.layout.width = e.value;
+					widthInput.refresh();
+				}
+			});
+
+			const linkInput = f.addBinding(state.grid.layout, 'link', {
+				label: locale['grid_layout.lock_size']
+			}).on('change', ()=> editMode.show());
+
+			/**
+			 * @see https://github.com/tweakpane/plugin-essentials
+			 */
+			f.addBlade({
+				view: 'buttongrid',
+				size: [3, 1],
+				cells: (x, y) => ({
+					title: [
+						[locale['btn.reset'], locale['btn.apply'], locale['btn.save']],
+					][y][x],
+				}),
+				label: locale['info.controls'],
+			}).on('click', (ev) => {
+				// console.log(ev);
+				const id = ev.index.toString();
+
+				switch (id) {
+					case '0,0':
+						self.reset();
+						break;
+					case '1,0':
+						self.set();
+						break;
+					case '2,0':
+						self.save();
+						break;
+				}
+			});
+
+			function refreshInputs() {
+				widthInput.refresh();
+				heightInput.refresh();
+				linkInput.refresh();
+			}
+
+			function onAccept() {
+				/**
+				 * @type {import('./Global').ClearGlobalData}
+				 */
+				const backupClearData = {};
+
+				for (let key in state.clear) {
+					backupClearData[key] = state.clear[key];
+				}
+
+				Global.set_clear({
+					grid: true,
+					frames: true,
+					viewport: false,
+					animationController: false
+				});
+
+				Emitter.emit(CLEAR_EVENTS.CLEAR);
+
+				Emitter.emit(GRID_EVENTS.CREATE, /** @type {import('./events/GridEvents').CreateGridData}*/({
+					width: state.grid.layout.width,
+					height: state.grid.layout.height,
+					imageWidth: state.image.width,
+					imageHeight: state.image.height,
+				}));
+
+				Global.set_clear({
+					grid: backupClearData.grid,
+					frames: backupClearData.frames,
+					viewport: backupClearData.viewport,
+					animationController: backupClearData.animationController
+				});
+
+				folderNotification.show();
+			}
 		};
 
-		const widthInput = f.addBinding(state.grid.layout, 'width', {
-			label: locale['grid.width'],
-			min: 0,
-			step: 1
-		}).on('change', e => {
-			editMode.show();
-			if (state.grid.layout.link) {
-				state.grid.layout.height = e.value;
-				heightInput.refresh();
-			}
-		});
-
-		const heightInput = f.addBinding(state.grid.layout, 'height', {
-			label: locale['grid.height'],
-			min: 0,
-			step: 1
-		}).on('change', e => {
-			editMode.show();
-			if (state.grid.layout.link) {
-				state.grid.layout.width = e.value;
-				widthInput.refresh();
-			}
-		});
-
-		const linkInput = f.addBinding(state.grid.layout, 'link', {
-			label: locale['grid.lock_size']
-		}).on('change', ()=> editMode.show());
-		f.addButton({
-			title: locale['btn.reset'],
-		}).on('click', self.reset);
-		f.addButton({
-			title: locale['btn.apply'],
-		}).on('click', self.set);
-
-		function refreshInputs() {
-			widthInput.refresh();
-			heightInput.refresh();
-			linkInput.refresh();
-		}
-
-		function onAccept() {
-			/**
-			 * @type {import('./Global').ClearGlobalData}
-			 */
-			const backupClearData = {};
-
-			for (let key in state.clear) {
-				backupClearData[key] = state.clear[key];
-			}
-
-			Global.set_clear({
-				grid: true,
-				frames: true,
-				viewport: false,
-				animationController: false
-			});
-
-			Emitter.emit(CLEAR_EVENTS.CLEAR);
-
-			Emitter.emit(GRID_EVENTS.CREATE, /** @type {import('./events/GridEvents').CreateGridData}*/({
-				width: state.grid.layout.width,
-				height: state.grid.layout.height,
-				imageWidth: state.image.width,
-				imageHeight: state.image.height,
-			}));
-
-			Global.set_clear({
-				grid: backupClearData.grid,
-				frames: backupClearData.frames,
-				viewport: backupClearData.viewport,
-				animationController: backupClearData.animationController
-			});
-
-			folderNotification.show();
-		}
+		Emitter.emit(GRID_EVENTS.REQUEST_LOAD_LAYOUT);
+		Emitter.on(GRID_EVENTS.REQUEST_LOAD_LAYOUT_COMPLETE, init);
 	})();
 
 	const viewport = (() => {
@@ -773,7 +807,7 @@ export function MenuGUI() {
 					refreshInputs();
 					self.ok();
 					editMode.hide();
-					Emitter.emit(GRID_EVENTS.REQUEST_DELETE);
+					Emitter.emit(GRID_EVENTS.REQUEST_DELETE_APPEARANCE);
 					folderNotification.show(locale['info.reset_applied']);
 				},
 				ok: () => {
@@ -783,7 +817,8 @@ export function MenuGUI() {
 					editMode.hide();
 				},
 				save: () => {
-					Emitter.emit(GRID_EVENTS.REQUEST_SAVE);
+					self.ok();
+					Emitter.emit(GRID_EVENTS.REQUEST_SAVE_APPEARANCE);
 					folderNotification.show(locale['info.settings_saved'], 'warn');
 				},
 			};
@@ -799,8 +834,8 @@ export function MenuGUI() {
 			}).on('click', self.save);
 		};
 
-		Emitter.emit(GRID_EVENTS.REQUEST_LOAD);
-		Emitter.on(GRID_EVENTS.REQUEST_LOAD_COMPLETE, init);
+		Emitter.emit(GRID_EVENTS.REQUEST_LOAD_APPEARANCE);
+		Emitter.on(GRID_EVENTS.REQUEST_LOAD_APPEARANCE_COMPLETE, init);
 	})();
 
 	const interfaceSettings = (() => {
