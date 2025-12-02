@@ -358,7 +358,7 @@ export function MenuGUI() {
 						[locale['btn.reset'], locale['btn.apply'], locale['btn.save']],
 					][y][x],
 				}),
-				label: locale['info.controls'],
+				label: locale['info.actions'],
 			}).on('click', (ev) => {
 				// console.log(ev);
 				const id = ev.index.toString();

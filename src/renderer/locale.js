@@ -13,6 +13,7 @@ export function getLocale() {
 		'info.settings_saved': 'Settings saved',
 		'info.nothing_to_clear': 'Nothing to Clear',
 		'info.controls': 'Controls',
+		'info.actions': 'Actions',
 
 		'btn.cancel': 'Cancel',
 		'btn.ok': 'Ok',
