@@ -2,6 +2,7 @@ import * as EssentialsPlugin from '@tweakpane/plugin-essentials';
 import {ButtonApi, FolderApi, Pane, TabPageApi} from 'tweakpane';
 
 import { Emitter } from './Emitter';
+import { ANIMATION_CONTROLS_EVENTS } from './events/AnimationControlsEvents';
 import { CLEAR_EVENTS } from './events/ClearEvents';
 import { FRAMES_EVENTS } from './events/FramesEvents';
 import { GENERAL_EVENTS } from './events/GeneralEvents';
@@ -154,105 +155,154 @@ export function MenuGUI() {
 			title: locale['anim.title'],
 			expanded: false
 		});
+		const folderNotification = ShowFolderNotification(f);
 
-		const f1 = f.addFolder({
-			title: locale['anim.durationMs'],
-			expanded: true
-		});
-		const f2 = f.addFolder({
-			title: locale['anim.frameRate'],
-			expanded: true
-		});
+		const init = () => {
+			const f1 = f.addFolder({
+				title: locale['anim.durationMs'],
+				expanded: true
+			});
+			const f2 = f.addFolder({
+				title: locale['anim.frameRate'],
+				expanded: true
+			});
 
-		const durationMsInput = f1.addBinding(state.animationController, 'durationMs', {
-			label: '',
-			min: 0,
-			step: 0.1
-		}).on('change', e => {
-			if (syncInput) {
-				syncInput = false;
-				return;
-			}
-			syncInput = true;
-			state.animationController.frameRate = msToFPS(e.value);
-			fpsInput.refresh();
-		});
-
-		const fpsInput = f2.addBinding(state.animationController, 'frameRate', {
-			label: '',
-			min: 0,
-			step: 0.1
-		}).on('change', e => {
-			if (syncInput) {
-				syncInput = false;
-				return;
-			}
-			syncInput = true;
-			// Will return 2-decimal rounded value
-			const formatted = formatValue(e.value);
-			state.animationController.frameRate = formatted;
-			state.animationController.durationMs = fpsToMs(formatted);
-			durationMsInput.refresh();
-		});
-
-		f.addBinding(state.animationController, 'loop', {
-			label: locale['anim.loop']
-		});
-		const playStatInput = f.addBinding(state.animationController, 'play', {
-			label: locale['anim.playMode'],
-			disabled: true,
-		});
-
-		const isFrameEnded = () => {
-			return state.preview.activeFrameIndex === state.preview.totalFrames - 1;
-		};
-
-		const self = {
-			play: () => {
-				if (isFrameEnded()) {
-					self.restart();
+			const durationMsInput = f1.addBinding(state.animationController, 'durationMs', {
+				label: '',
+				min: 0,
+				step: 0.1
+			}).on('change', e => {
+				if (syncInput) {
+					syncInput = false;
+					return;
 				}
-				playStatInput.controller.value.setRawValue(true);
-			},
-			restart: () => {
-				Global.set_preview({
-					activeFrameIndex: 0
-				});
-				Emitter.emit(FRAMES_EVENTS.RESTART);
-			},
-			stop: () => {
-				playStatInput.controller.value.setRawValue(false);
-			}
+				syncInput = true;
+				state.animationController.frameRate = msToFPS(e.value);
+				fpsInput.refresh();
+			});
+
+			const fpsInput = f2.addBinding(state.animationController, 'frameRate', {
+				label: '',
+				min: 0,
+				step: 0.1
+			}).on('change', e => {
+				if (syncInput) {
+					syncInput = false;
+					return;
+				}
+				syncInput = true;
+				// Will return 2-decimal rounded value
+				const formatted = formatValue(e.value);
+				state.animationController.frameRate = formatted;
+				state.animationController.durationMs = fpsToMs(formatted);
+				durationMsInput.refresh();
+			});
+
+			f.addBinding(state.animationController, 'loop', {
+				label: locale['anim.loop']
+			});
+			const playStatInput = f.addBinding(state.animationController, 'play', {
+				label: locale['anim.playMode'],
+				disabled: true,
+			});
+
+			const isFrameEnded = () => {
+				return state.preview.activeFrameIndex === state.preview.totalFrames - 1;
+			};
+
+			const self = {
+				play: () => {
+					if (isFrameEnded()) {
+						self.restart();
+					}
+					playStatInput.controller.value.setRawValue(true);
+				},
+				restart: () => {
+					Global.set_preview({
+						activeFrameIndex: 0
+					});
+					Emitter.emit(FRAMES_EVENTS.RESTART);
+				},
+				stop: () => {
+					playStatInput.controller.value.setRawValue(false);
+				},
+				save: () => {
+					Emitter.emit(ANIMATION_CONTROLS_EVENTS.REQUEST_SAVE);
+					folderNotification.show(locale['info.settings_saved'], 'warn');
+				},
+				reset: () => {
+					const defaultValues = Global.defaultAnimationController();
+					Global.set_animation_controller(defaultValues);
+
+					Emitter.emit(ANIMATION_CONTROLS_EVENTS.REQUEST_DELETE);
+					folderNotification.show(locale['info.reset_applied']);
+				}
+			};
+
+			/**
+			 * @see https://github.com/tweakpane/plugin-essentials
+			 */
+			f.addBlade({
+				view: 'buttongrid',
+				size: [3, 1],
+				cells: (x, y) => ({
+					title: [
+						[locale['btn.restart'], locale['btn.play'], locale['btn.stop']],
+					][y][x],
+				}),
+				label: locale['info.controls'],
+			}).on('click', (ev) => {
+				// console.log(ev);
+				const id = ev.index.toString();
+
+				switch (id) {
+				case '0,0':
+					self.restart();
+					break;
+				case '1,0':
+					self.play();
+					break;
+				case '2,0':
+					self.stop();
+					break;
+				}
+			});
+
+			/**
+			 * @see https://github.com/tweakpane/plugin-essentials
+			 */
+			f.addBlade({
+				view: 'buttongrid',
+				size: [2, 1],
+				cells: (x, y) => ({
+					title: [
+						[locale['btn.reset'], locale['btn.save']],
+					][y][x],
+				}),
+				label: locale['info.actions'],
+			}).on('click', (ev) => {
+				// console.log(ev);
+				const id = ev.index.toString();
+
+				switch (id) {
+				case '0,0':
+					self.reset();
+					break;
+				case '1,0':
+					self.save();
+					break;
+				}
+			});
+
+			// spacebar toggles play/stop
+			Global.keyboard('space').press = () => {
+				if (state.animationController.play) {
+					self.stop();
+				} else {
+					self.play();
+				}
+			};
 		};
-
-		/**
-		 * @see https://github.com/tweakpane/plugin-essentials
-		 */
-		f.addBlade({
-			view: 'buttongrid',
-			size: [3, 1],
-			cells: (x, y) => ({
-				title: [
-					[locale['btn.restart'], locale['btn.play'], locale['btn.stop']],
-				][y][x],
-			}),
-			label: locale['info.controls'],
-		}).on('click', (ev) => {
-			// console.log(ev);
-			const id = ev.index.toString();
-
-			switch (id) {
-			case '0,0':
-				self.restart();
-				break;
-			case '1,0':
-				self.play();
-				break;
-			case '2,0':
-				self.stop();
-				break;
-			}
-		});
 
 		// Tweakpane steals Spacebar, override it
 		// fully disable or intercept Spacebar before Tweakpane receives it
@@ -263,14 +313,8 @@ export function MenuGUI() {
 			}
 		});
 
-		// spacebar toggles play/stop
-		Global.keyboard('space').press = () => {
-			if (state.animationController.play) {
-				self.stop();
-			} else {
-				self.play();
-			}
-		};
+		Emitter.emit(ANIMATION_CONTROLS_EVENTS.REQUEST_LOAD);
+		Emitter.on(ANIMATION_CONTROLS_EVENTS.REQUEST_LOAD_COMPLETE, init);
 	})();
 
 	const grid = (() => {
@@ -364,15 +408,15 @@ export function MenuGUI() {
 				const id = ev.index.toString();
 
 				switch (id) {
-					case '0,0':
-						self.reset();
-						break;
-					case '1,0':
-						self.set();
-						break;
-					case '2,0':
-						self.save();
-						break;
+				case '0,0':
+					self.reset();
+					break;
+				case '1,0':
+					self.set();
+					break;
+				case '2,0':
+					self.save();
+					break;
 				}
 			});
 

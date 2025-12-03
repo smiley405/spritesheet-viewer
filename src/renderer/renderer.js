@@ -1,5 +1,6 @@
 import { ERROE_CODE } from './const';
 import { Emitter } from './Emitter';
+import { ANIMATION_CONTROLS_EVENTS } from './events/AnimationControlsEvents';
 import { GENERAL_EVENTS } from './events/GeneralEvents';
 import { GRID_EVENTS } from './events/GridEvents';
 import { MENU_EVENTS } from './events/MenuEvents';
@@ -11,7 +12,6 @@ import { ErrorPopup } from './popup/ErrorPopup';
 import { ExportCompletedPopup } from './popup/ExportCompletedPopup';
 import { ExportProgressPopup } from './popup/ExportProgressPopup';
 import { WarningPopup } from './popup/WarningPopup';
-import { copyObject } from './utils';
 
 export function IPCRenderer() {
 	const state = /** @type {TElectronBridgeState} */(/** @type {*} */(window).state);
@@ -115,6 +115,28 @@ export function IPCRenderer() {
 			Emitter.emit(GRID_EVENTS.UPDATE_SETTINGS);
 		}
 		Emitter.emit(GRID_EVENTS.REQUEST_LOAD_LAYOUT_COMPLETE);
+	});
+
+
+	// animation controls
+	Emitter.on(ANIMATION_CONTROLS_EVENTS.REQUEST_SAVE, () => {
+		state.saveRecord({id: 'animation_controls', value: Global.state.animationController});
+	});
+
+	Emitter.on(ANIMATION_CONTROLS_EVENTS.REQUEST_DELETE, () => {
+		state.deleteRecord({id: 'animation_controls'});
+	});
+
+	Emitter.on(ANIMATION_CONTROLS_EVENTS.REQUEST_LOAD, async() => {
+		/**
+		 * @type {import('./Global').AnimationControllerGlobalData}
+		 */
+		const settings = await state.getRecord({id: 'animation_controls'});
+
+		if (settings) {
+			Global.set_animation_controller(settings);
+		}
+		Emitter.emit(ANIMATION_CONTROLS_EVENTS.REQUEST_LOAD_COMPLETE);
 	});
 
 

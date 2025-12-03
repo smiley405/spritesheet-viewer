@@ -13,11 +13,6 @@
  * @typedef {{id: string}} DeselectGridArea
  */
 
-/**
- * Args for GRID_EVENTS.REQUEST_LOAD_COMPLETE
- * @typedef {{data: import("@renderer/Global").GridGlobalData}} GridRequestLoadCompletePayload
- */
-
 export const GRID_EVENTS = {
 	CREATE: 'GRID_EVENTS.CREATE',
 	CREATE_HIT_BOXES: 'GRID_EVENTS.CREATE_HIT_BOXES',
