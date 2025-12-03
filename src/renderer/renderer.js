@@ -1,5 +1,6 @@
 import { ERROE_CODE } from './const';
 import { Emitter } from './Emitter';
+import { ANIMATION_CONTROLS_EVENTS } from './events/AnimationControlsEvents';
 import { GENERAL_EVENTS } from './events/GeneralEvents';
 import { GRID_EVENTS } from './events/GridEvents';
 import { MENU_EVENTS } from './events/MenuEvents';
@@ -39,6 +40,7 @@ export function IPCRenderer() {
 		state.toggleAppMenubar();
 	});
 
+	// interface
 	Emitter.on(SETTINGS_EVENTS.REQUEST_SAVE, () => {
 		state.saveRecord({id: 'settings', value: Global.state.settings});
 	});
@@ -60,26 +62,83 @@ export function IPCRenderer() {
 		Emitter.emit(SETTINGS_EVENTS.REQUEST_LOAD_COMPLETE);
 	});
 
-	Emitter.on(GRID_EVENTS.REQUEST_SAVE, () => {
-		state.saveRecord({id: 'grid', value: Global.state.grid});
+	// grid
+	Emitter.on(GRID_EVENTS.REQUEST_SAVE_APPEARANCE, async() => {
+		state.saveRecord({id: 'grid_appearance', value: Global.state.grid.appearance});
 	});
 
-	Emitter.on(GRID_EVENTS.REQUEST_DELETE, () => {
-		state.deleteRecord({id: 'grid'});
+	Emitter.on(GRID_EVENTS.REQUEST_DELETE_APPEARANCE, async() => {
+		state.deleteRecord({id: 'grid_appearance'});
 	});
 
-	Emitter.on(GRID_EVENTS.REQUEST_LOAD, async() => {
+	Emitter.on(GRID_EVENTS.REQUEST_SAVE_LAYOUT, () => {
+		state.saveRecord({id: 'grid_layout', value: Global.state.grid.layout});
+	});
+
+	Emitter.on(GRID_EVENTS.REQUEST_DELETE_LAYOUT, () => {
+		state.deleteRecord({id: 'grid_layout'});
+	});
+
+	Emitter.on(GRID_EVENTS.REQUEST_LOAD_APPEARANCE, async() => {
 		/**
+		 * @type {import('./Global').GridAppearanceGlobalData}
+		 */
+		let gridAppearance = await state.getRecord({id: 'grid_appearance'});
+
+		/**
+		 * @deprecated - will be deleted after v1.2.5. This is an old way of saving the grid records
 		 * @type {import('./Global').GridGlobalData}
 		 */
 		const grid = await state.getRecord({id: 'grid'});
+		// Make sure the deprecated settings still works in newer versions
+		if (grid?.appearance && !gridAppearance) {
+			gridAppearance = grid.appearance;
+			state.deleteRecord({id: 'grid'});
+			state.saveRecord({id: 'grid_appearance', value: gridAppearance});
+		}
 
-		if (grid) {
-			Global.set_grid_appearance(grid.appearance);
+		// New way of saving grid records
+		if (gridAppearance) {
+			Global.set_grid_appearance(gridAppearance);
 			Emitter.emit(GRID_EVENTS.UPDATE_SETTINGS);
 		}
-		Emitter.emit(GRID_EVENTS.REQUEST_LOAD_COMPLETE);
+		Emitter.emit(GRID_EVENTS.REQUEST_LOAD_APPEARANCE_COMPLETE);
 	});
+
+	Emitter.on(GRID_EVENTS.REQUEST_LOAD_LAYOUT, async() => {
+		/**
+		 * @type {import('./Global').GridLayoutGlobalData}
+		 */
+		const gridLayout = await state.getRecord({id: 'grid_layout'});
+		if (gridLayout) {
+			Global.set_grid_layout(gridLayout);
+			Emitter.emit(GRID_EVENTS.UPDATE_SETTINGS);
+		}
+		Emitter.emit(GRID_EVENTS.REQUEST_LOAD_LAYOUT_COMPLETE);
+	});
+
+
+	// animation controls
+	Emitter.on(ANIMATION_CONTROLS_EVENTS.REQUEST_SAVE, () => {
+		state.saveRecord({id: 'animation_controls', value: Global.state.animationController});
+	});
+
+	Emitter.on(ANIMATION_CONTROLS_EVENTS.REQUEST_DELETE, () => {
+		state.deleteRecord({id: 'animation_controls'});
+	});
+
+	Emitter.on(ANIMATION_CONTROLS_EVENTS.REQUEST_LOAD, async() => {
+		/**
+		 * @type {import('./Global').AnimationControllerGlobalData}
+		 */
+		const settings = await state.getRecord({id: 'animation_controls'});
+
+		if (settings) {
+			Global.set_animation_controller(settings);
+		}
+		Emitter.emit(ANIMATION_CONTROLS_EVENTS.REQUEST_LOAD_COMPLETE);
+	});
+
 
 	state.updateImage((e, imgSrc) => {
 		Emitter.emit(UPLOADER_EVENTS.UPDATE_IMAGE, imgSrc);

@@ -2,6 +2,7 @@ import * as EssentialsPlugin from '@tweakpane/plugin-essentials';
 import {ButtonApi, FolderApi, Pane, TabPageApi} from 'tweakpane';
 
 import { Emitter } from './Emitter';
+import { ANIMATION_CONTROLS_EVENTS } from './events/AnimationControlsEvents';
 import { CLEAR_EVENTS } from './events/ClearEvents';
 import { FRAMES_EVENTS } from './events/FramesEvents';
 import { GENERAL_EVENTS } from './events/GeneralEvents';
@@ -154,105 +155,161 @@ export function MenuGUI() {
 			title: locale['anim.title'],
 			expanded: false
 		});
+		const folderNotification = ShowFolderNotification(f);
 
-		const f1 = f.addFolder({
-			title: locale['anim.durationMs'],
-			expanded: true
-		});
-		const f2 = f.addFolder({
-			title: locale['anim.frameRate'],
-			expanded: true
-		});
+		const init = () => {
+			const f1 = f.addFolder({
+				title: locale['anim.durationMs'],
+				expanded: true
+			});
+			const f2 = f.addFolder({
+				title: locale['anim.frameRate'],
+				expanded: true
+			});
 
-		const durationMsInput = f1.addBinding(state.animationController, 'durationMs', {
-			label: '',
-			min: 0,
-			step: 0.1
-		}).on('change', e => {
-			if (syncInput) {
-				syncInput = false;
-				return;
-			}
-			syncInput = true;
-			state.animationController.frameRate = msToFPS(e.value);
-			fpsInput.refresh();
-		});
-
-		const fpsInput = f2.addBinding(state.animationController, 'frameRate', {
-			label: '',
-			min: 0,
-			step: 0.1
-		}).on('change', e => {
-			if (syncInput) {
-				syncInput = false;
-				return;
-			}
-			syncInput = true;
-			// Will return 2-decimal rounded value
-			const formatted = formatValue(e.value);
-			state.animationController.frameRate = formatted;
-			state.animationController.durationMs = fpsToMs(formatted);
-			durationMsInput.refresh();
-		});
-
-		f.addBinding(state.animationController, 'loop', {
-			label: locale['anim.loop']
-		});
-		const playStatInput = f.addBinding(state.animationController, 'play', {
-			label: locale['anim.playMode'],
-			disabled: true,
-		});
-
-		const isFrameEnded = () => {
-			return state.preview.activeFrameIndex === state.preview.totalFrames - 1;
-		};
-
-		const self = {
-			play: () => {
-				if (isFrameEnded()) {
-					self.restart();
+			const durationMsInput = f1.addBinding(state.animationController, 'durationMs', {
+				label: '',
+				min: 0,
+				step: 0.1
+			}).on('change', e => {
+				if (syncInput) {
+					syncInput = false;
+					return;
 				}
-				playStatInput.controller.value.setRawValue(true);
-			},
-			restart: () => {
-				Global.set_preview({
-					activeFrameIndex: 0
-				});
-				Emitter.emit(FRAMES_EVENTS.RESTART);
-			},
-			stop: () => {
-				playStatInput.controller.value.setRawValue(false);
+				syncInput = true;
+				state.animationController.frameRate = msToFPS(e.value);
+				fpsInput.refresh();
+			});
+
+			const fpsInput = f2.addBinding(state.animationController, 'frameRate', {
+				label: '',
+				min: 0,
+				step: 0.1
+			}).on('change', e => {
+				if (syncInput) {
+					syncInput = false;
+					return;
+				}
+				syncInput = true;
+				// Will return 2-decimal rounded value
+				const formatted = formatValue(e.value);
+				state.animationController.frameRate = formatted;
+				state.animationController.durationMs = fpsToMs(formatted);
+				durationMsInput.refresh();
+			});
+
+			const loopInput = f.addBinding(state.animationController, 'loop', {
+				label: locale['anim.loop']
+			});
+
+			const playStatInput = f.addBinding(state.animationController, 'play', {
+				label: locale['anim.playMode'],
+				disabled: true,
+			});
+
+			const isFrameEnded = () => {
+				return state.preview.activeFrameIndex === state.preview.totalFrames - 1;
+			};
+
+			function refreshInputs() {
+				durationMsInput.refresh();
+				fpsInput.refresh();
+				loopInput.refresh();
+				playStatInput.refresh();
 			}
+
+			const self = {
+				play: () => {
+					if (isFrameEnded()) {
+						self.restart();
+					}
+					playStatInput.controller.value.setRawValue(true);
+				},
+				restart: () => {
+					Global.set_preview({
+						activeFrameIndex: 0
+					});
+					Emitter.emit(FRAMES_EVENTS.RESTART);
+				},
+				stop: () => {
+					playStatInput.controller.value.setRawValue(false);
+				},
+				save: () => {
+					Emitter.emit(ANIMATION_CONTROLS_EVENTS.REQUEST_SAVE);
+					folderNotification.show(locale['info.settings_saved'], 'warn');
+				},
+				reset: () => {
+					Global.set_animation_controller(Global.defaultAnimationController());
+					Emitter.emit(ANIMATION_CONTROLS_EVENTS.REQUEST_DELETE);
+					refreshInputs();
+					folderNotification.show(locale['info.reset_applied']);
+				}
+			};
+
+			/**
+			 * @see https://github.com/tweakpane/plugin-essentials
+			 */
+			f.addBlade({
+				view: 'buttongrid',
+				size: [3, 1],
+				cells: (x, y) => ({
+					title: [
+						[locale['btn.restart'], locale['btn.play'], locale['btn.stop']],
+					][y][x],
+				}),
+				label: locale['info.controls'],
+			}).on('click', (ev) => {
+				// console.log(ev);
+				const id = ev.index.toString();
+
+				switch (id) {
+				case '0,0':
+					self.restart();
+					break;
+				case '1,0':
+					self.play();
+					break;
+				case '2,0':
+					self.stop();
+					break;
+				}
+			});
+
+			/**
+			 * @see https://github.com/tweakpane/plugin-essentials
+			 */
+			f.addBlade({
+				view: 'buttongrid',
+				size: [2, 1],
+				cells: (x, y) => ({
+					title: [
+						[locale['btn.reset'], locale['btn.save']],
+					][y][x],
+				}),
+				label: locale['info.actions'],
+			}).on('click', (ev) => {
+				// console.log(ev);
+				const id = ev.index.toString();
+
+				switch (id) {
+				case '0,0':
+					self.reset();
+					break;
+				case '1,0':
+					self.save();
+					break;
+				}
+			});
+
+			// spacebar toggles play/stop
+			Global.keyboard('space').press = () => {
+				if (state.animationController.play) {
+					self.stop();
+				} else {
+					self.play();
+				}
+			};
 		};
-
-		/**
-		 * @see https://github.com/tweakpane/plugin-essentials
-		 */
-		f.addBlade({
-			view: 'buttongrid',
-			size: [3, 1],
-			cells: (x, y) => ({
-				title: [
-					[locale['btn.restart'], locale['btn.play'], locale['btn.stop']],
-				][y][x],
-			}),
-			label: locale['info.controls'],
-		}).on('click', (ev) => {
-			// console.log(ev);
-			const id = ev.index.toString();
-
-			switch (id) {
-			case '0,0':
-				self.restart();
-				break;
-			case '1,0':
-				self.play();
-				break;
-			case '2,0':
-				self.stop();
-				break;
-			}
-		});
 
 		// Tweakpane steals Spacebar, override it
 		// fully disable or intercept Spacebar before Tweakpane receives it
@@ -263,19 +320,13 @@ export function MenuGUI() {
 			}
 		});
 
-		// spacebar toggles play/stop
-		Global.keyboard('space').press = () => {
-			if (state.animationController.play) {
-				self.stop();
-			} else {
-				self.play();
-			}
-		};
+		Emitter.emit(ANIMATION_CONTROLS_EVENTS.REQUEST_LOAD);
+		Emitter.on(ANIMATION_CONTROLS_EVENTS.REQUEST_LOAD_COMPLETE, init);
 	})();
 
 	const grid = (() => {
 		const frames = getDivElementById('frames');
-		const title = locale['grid.title'];
+		const title = locale['grid_layout.title'];
 		const f = page1.addFolder({
 			title,
 			expanded: false
@@ -284,109 +335,143 @@ export function MenuGUI() {
 		const folderNotification = ShowFolderNotification(f);
 		const editMode = EditMode(f, title);
 
-		const self = {
-			set: () => {
-				if (!state.image.src) {
-					pane.expanded = false;
-					WarningPopup({text: locale['warn.viewport_is_empty']});
-				} else {
-					if (frames.children.length) {
+		const init = () => {
+			const self = {
+				set: () => {
+					if (!state.image.src) {
 						pane.expanded = false;
-						WarningPopup({
-							text: locale['warn.will_clear_all_frames'],
-							onAccept: onAccept.bind(this),
-							onDecline: ()=> {
-								// Emitter.emit(GRID_EVENTS.REMOVE);
-							}
-						});
+						WarningPopup({text: locale['warn.viewport_is_empty']});
 					} else {
-						onAccept();
+						if (frames.children.length) {
+							pane.expanded = false;
+							WarningPopup({
+								text: locale['warn.will_clear_all_frames'],
+								onAccept: onAccept.bind(this),
+								onDecline: ()=> {
+									// Emitter.emit(GRID_EVENTS.REMOVE);
+								}
+							});
+						} else {
+							onAccept();
+						}
+						editMode.hide();
 					}
-					editMode.hide();
+				},
+				reset: () => {
+					Global.set_grid_layout(Global.defaultGridLayout());
+					Emitter.emit(GRID_EVENTS.REQUEST_DELETE_LAYOUT);
+					refreshInputs();
+					folderNotification.show(locale['info.reset_applied']);
+				},
+				save: () => {
+					// self.set();
+					Emitter.emit(GRID_EVENTS.REQUEST_SAVE_LAYOUT);
+					folderNotification.show(locale['info.settings_saved'], 'warn');
 				}
-			},
-			reset: () => {
-				Global.set_grid_layout(Global.defaultGridLayout());
-				refreshInputs();
-				folderNotification.show(locale['info.reset_applied']);
-			},
+			};
+
+			const widthInput = f.addBinding(state.grid.layout, 'width', {
+				label: locale['grid_layout.width'],
+				min: 0,
+				step: 1
+			}).on('change', e => {
+				editMode.show();
+				if (state.grid.layout.link) {
+					state.grid.layout.height = e.value;
+					heightInput.refresh();
+				}
+			});
+
+			const heightInput = f.addBinding(state.grid.layout, 'height', {
+				label: locale['grid_layout.height'],
+				min: 0,
+				step: 1
+			}).on('change', e => {
+				editMode.show();
+				if (state.grid.layout.link) {
+					state.grid.layout.width = e.value;
+					widthInput.refresh();
+				}
+			});
+
+			const linkInput = f.addBinding(state.grid.layout, 'link', {
+				label: locale['grid_layout.lock_size']
+			}).on('change', ()=> editMode.show());
+
+			/**
+			 * @see https://github.com/tweakpane/plugin-essentials
+			 */
+			f.addBlade({
+				view: 'buttongrid',
+				size: [3, 1],
+				cells: (x, y) => ({
+					title: [
+						[locale['btn.reset'], locale['btn.apply'], locale['btn.save']],
+					][y][x],
+				}),
+				label: locale['info.actions'],
+			}).on('click', (ev) => {
+				// console.log(ev);
+				const id = ev.index.toString();
+
+				switch (id) {
+				case '0,0':
+					self.reset();
+					break;
+				case '1,0':
+					self.set();
+					break;
+				case '2,0':
+					self.save();
+					break;
+				}
+			});
+
+			function refreshInputs() {
+				widthInput.refresh();
+				heightInput.refresh();
+				linkInput.refresh();
+			}
+
+			function onAccept() {
+				/**
+				 * @type {import('./Global').ClearGlobalData}
+				 */
+				const backupClearData = {};
+
+				for (let key in state.clear) {
+					backupClearData[key] = state.clear[key];
+				}
+
+				Global.set_clear({
+					grid: true,
+					frames: true,
+					viewport: false,
+					animationController: false
+				});
+
+				Emitter.emit(CLEAR_EVENTS.CLEAR);
+
+				Emitter.emit(GRID_EVENTS.CREATE, /** @type {import('./events/GridEvents').CreateGridData}*/({
+					width: state.grid.layout.width,
+					height: state.grid.layout.height,
+					imageWidth: state.image.width,
+					imageHeight: state.image.height,
+				}));
+
+				Global.set_clear({
+					grid: backupClearData.grid,
+					frames: backupClearData.frames,
+					viewport: backupClearData.viewport,
+					animationController: backupClearData.animationController
+				});
+
+				folderNotification.show();
+			}
 		};
 
-		const widthInput = f.addBinding(state.grid.layout, 'width', {
-			label: locale['grid.width'],
-			min: 0,
-			step: 1
-		}).on('change', e => {
-			editMode.show();
-			if (state.grid.layout.link) {
-				state.grid.layout.height = e.value;
-				heightInput.refresh();
-			}
-		});
-
-		const heightInput = f.addBinding(state.grid.layout, 'height', {
-			label: locale['grid.height'],
-			min: 0,
-			step: 1
-		}).on('change', e => {
-			editMode.show();
-			if (state.grid.layout.link) {
-				state.grid.layout.width = e.value;
-				widthInput.refresh();
-			}
-		});
-
-		const linkInput = f.addBinding(state.grid.layout, 'link', {
-			label: locale['grid.lock_size']
-		}).on('change', ()=> editMode.show());
-		f.addButton({
-			title: locale['btn.reset'],
-		}).on('click', self.reset);
-		f.addButton({
-			title: locale['btn.apply'],
-		}).on('click', self.set);
-
-		function refreshInputs() {
-			widthInput.refresh();
-			heightInput.refresh();
-			linkInput.refresh();
-		}
-
-		function onAccept() {
-			/**
-			 * @type {import('./Global').ClearGlobalData}
-			 */
-			const backupClearData = {};
-
-			for (let key in state.clear) {
-				backupClearData[key] = state.clear[key];
-			}
-
-			Global.set_clear({
-				grid: true,
-				frames: true,
-				viewport: false,
-				animationController: false
-			});
-
-			Emitter.emit(CLEAR_EVENTS.CLEAR);
-
-			Emitter.emit(GRID_EVENTS.CREATE, /** @type {import('./events/GridEvents').CreateGridData}*/({
-				width: state.grid.layout.width,
-				height: state.grid.layout.height,
-				imageWidth: state.image.width,
-				imageHeight: state.image.height,
-			}));
-
-			Global.set_clear({
-				grid: backupClearData.grid,
-				frames: backupClearData.frames,
-				viewport: backupClearData.viewport,
-				animationController: backupClearData.animationController
-			});
-
-			folderNotification.show();
-		}
+		Emitter.emit(GRID_EVENTS.REQUEST_LOAD_LAYOUT);
+		Emitter.on(GRID_EVENTS.REQUEST_LOAD_LAYOUT_COMPLETE, init);
 	})();
 
 	const viewport = (() => {
@@ -773,7 +858,7 @@ export function MenuGUI() {
 					refreshInputs();
 					self.ok();
 					editMode.hide();
-					Emitter.emit(GRID_EVENTS.REQUEST_DELETE);
+					Emitter.emit(GRID_EVENTS.REQUEST_DELETE_APPEARANCE);
 					folderNotification.show(locale['info.reset_applied']);
 				},
 				ok: () => {
@@ -783,24 +868,44 @@ export function MenuGUI() {
 					editMode.hide();
 				},
 				save: () => {
-					Emitter.emit(GRID_EVENTS.REQUEST_SAVE);
+					self.ok();
+					Emitter.emit(GRID_EVENTS.REQUEST_SAVE_APPEARANCE);
 					folderNotification.show(locale['info.settings_saved'], 'warn');
 				},
 			};
 
-			f.addButton({
-				title: locale['btn.reset']
-			}).on('click', self.reset);
-			f.addButton({
-				title: locale['btn.apply']
-			}).on('click', self.ok);
-			f.addButton({
-				title: locale['btn.save']
-			}).on('click', self.save);
+			/**
+			 * @see https://github.com/tweakpane/plugin-essentials
+			 */
+			f.addBlade({
+				view: 'buttongrid',
+				size: [3, 1],
+				cells: (x, y) => ({
+					title: [
+						[locale['btn.reset'], locale['btn.apply'], locale['btn.save']],
+					][y][x],
+				}),
+				label: locale['info.actions'],
+			}).on('click', (ev) => {
+				// console.log(ev);
+				const id = ev.index.toString();
+
+				switch (id) {
+				case '0,0':
+					self.reset();
+					break;
+				case '1,0':
+					self.ok();
+					break;
+				case '2,0':
+					self.save();
+					break;
+				}
+			});
 		};
 
-		Emitter.emit(GRID_EVENTS.REQUEST_LOAD);
-		Emitter.on(GRID_EVENTS.REQUEST_LOAD_COMPLETE, init);
+		Emitter.emit(GRID_EVENTS.REQUEST_LOAD_APPEARANCE);
+		Emitter.on(GRID_EVENTS.REQUEST_LOAD_APPEARANCE_COMPLETE, init);
 	})();
 
 	const interfaceSettings = (() => {
@@ -927,15 +1032,34 @@ export function MenuGUI() {
 				},
 			};
 
-			f.addButton({
-				title: locale['btn.reset']
-			}).on('click', self.reset);
-			f.addButton({
-				title: locale['btn.apply']
-			}).on('click', self.ok);
-			f.addButton({
-				title: locale['btn.save']
-			}).on('click', self.save);
+			/**
+			 * @see https://github.com/tweakpane/plugin-essentials
+			 */
+			f.addBlade({
+				view: 'buttongrid',
+				size: [3, 1],
+				cells: (x, y) => ({
+					title: [
+						[locale['btn.reset'], locale['btn.apply'], locale['btn.save']],
+					][y][x],
+				}),
+				label: locale['info.actions'],
+			}).on('click', (ev) => {
+				// console.log(ev);
+				const id = ev.index.toString();
+
+				switch (id) {
+				case '0,0':
+					self.reset();
+					break;
+				case '1,0':
+					self.ok();
+					break;
+				case '2,0':
+					self.save();
+					break;
+				}
+			});
 		};
 
 		Emitter.emit(SETTINGS_EVENTS.REQUEST_LOAD);
@@ -1161,15 +1285,34 @@ export function MenuGUI() {
 			expanded: false
 		});
 
-		f.addButton({
-			title: locale['tools.align_left']
-		}).on('click', config.alignLeft);
-		f.addButton({
-			title: locale['tools.align_right']
-		}).on('click', config.alignRight);
-		f.addButton({
-			title: locale['tools.align_top_middle']
-		}).on('click', config.alignTopMiddle);
+		/**
+		 * @see https://github.com/tweakpane/plugin-essentials
+		 */
+		f.addBlade({
+			view: 'buttongrid',
+			size: [3, 1],
+			cells: (x, y) => ({
+				title: [
+					[locale['info.left'], locale['info.right'], locale['info.top_center']],
+				][y][x],
+			}),
+			label: locale['info.align'],
+		}).on('click', (ev) => {
+			// console.log(ev);
+			const id = ev.index.toString();
+
+			switch (id) {
+			case '0,0':
+				config.alignLeft();
+				break;
+			case '1,0':
+				config.alignRight();
+				break;
+			case '2,0':
+				config.alignTopMiddle();
+				break;
+			}
+		});
 	})();
 
 	const tools = (() => {

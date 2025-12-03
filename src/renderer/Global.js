@@ -470,6 +470,7 @@ function CreateGlobal() {
 		defaultGrid,
 		defaultGridAppearance,
 		defaultGridLayout,
+		defaultAnimationController,
 	};
 }
 

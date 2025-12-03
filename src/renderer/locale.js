@@ -13,6 +13,11 @@ export function getLocale() {
 		'info.settings_saved': 'Settings saved',
 		'info.nothing_to_clear': 'Nothing to Clear',
 		'info.controls': 'Controls',
+		'info.actions': 'Actions',
+		'info.left': 'Left',
+		'info.right': 'Right',
+		'info.top_center': 'Top Center',
+		'info.align': 'Align',
 
 		'btn.cancel': 'Cancel',
 		'btn.ok': 'Ok',
@@ -23,6 +28,7 @@ export function getLocale() {
 		'btn.reset': 'Reset',
 		'btn.run': 'Run',
 		'btn.save': 'Save',
+		'btn.save_and_apply': 'Save & Apply',
 		'btn.play': 'Play',
 		'btn.stop': 'Stop',
 		'btn.select_all': 'Select All',
@@ -60,10 +66,10 @@ export function getLocale() {
 		'export.spritesheet_padding': 'Padding',
 
 
-		'grid.title': 'Grid',
-		'grid.width': 'Width',
-		'grid.height': 'Height',
-		'grid.lock_size': 'Lock Size',
+		'grid_layout.title': 'Grid Layout',
+		'grid_layout.width': 'Width',
+		'grid_layout.height': 'Height',
+		'grid_layout.lock_size': 'Lock Size',
 
 		'grid_appearance.title': 'Grid Appearance',
 		'grid_appearance.color': 'Color',
@@ -107,9 +113,6 @@ export function getLocale() {
 
 		'tools.toggle_debug_menu': 'Toggle Debug Menu',
 		'tools.align_title': 'Alignment',
-		'tools.align_left': 'Align Left',
-		'tools.align_right': 'Align Right',
-		'tools.align_top_middle': 'Align Top Middle',
 		'tools.close_opened_folders': 'Close Opened Folders',
 		'tools.close_menu': 'Close Menu',
 
