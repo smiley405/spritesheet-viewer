@@ -6,7 +6,7 @@ import { PreviewFrames } from './frames/PreviewFrames';
 import { Global } from './Global';
 import { GridHitBoxes } from './grid/GridHitBoxes';
 import { Grids } from './grid/Grids';
-import { MenuGUI } from './MenuGUI';
+import { Menu } from './menu/Menu';
 import { HelpPopup } from './popup/HelpPopup';
 import { PreloaderPopup } from './popup/PreloaderPopup';
 import { UploadPopup } from './popup/UploadPopup';
@@ -57,7 +57,7 @@ window.onload = ()=> {
 	FramesCollection();
 	PreviewFrames();
 
-	MenuGUI();
+	Menu();
 
 	Resizer();
 };
