@@ -1,7 +1,7 @@
 {
 	"type": "module",
 	"name": "spritesheet-viewer",
-	"version": "1.2.1",
+	"version": "1.2.2",
 	"description": "Spritesheet viewer for GrafX2",
 	"main": "./src/main/main.js",
 	"scripts": {
