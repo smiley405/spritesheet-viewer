@@ -58,22 +58,40 @@ export function MenuGUI() {
 			parentElement.style.overflowX = 'hidden';
 			parentElement.style.scrollbarColor = '#161616 #5a5c5d';
 			parentElement.style.scrollbarWidth = 'thin';
-			config.alignLeft();
+			config.updateAlignment();
 		},
 		alignLeft: () => {
 			pane.element.parentElement.style.right = 'unset';
 			pane.element.parentElement.style.left = toPx(8);
 			pane.element.parentElement.style.transform = 'none';
+			Global.set_menu_window_alignment({ align: 'left' });
 		},
 		alignRight: () => {
 			pane.element.parentElement.style.right = toPx(8);
 			pane.element.parentElement.style.left = 'unset';
 			pane.element.parentElement.style.transform = 'none';
+			Global.set_menu_window_alignment({ align: 'right' });
 		},
 		alignTopMiddle: () => {
 			pane.element.parentElement.style.right = 'unset';
 			pane.element.parentElement.style.left = '50%';
 			pane.element.parentElement.style.transform = 'translate(-50%, 0)';
+			Global.set_menu_window_alignment({ align: 'top-middle' });
+		},
+		updateAlignment: () => {
+			const align = Global.state.menuWindowAlignment.align;
+
+			switch (align) {
+			case 'top-middle':
+				config.alignTopMiddle();
+				break;
+			case 'right':
+				config.alignRight();
+				break;
+			default:
+				config.alignLeft();
+				break;
+			}
 		},
 		update: () => {
 			const parentElement = pane.element.parentElement;
@@ -1346,34 +1364,83 @@ export function MenuGUI() {
 			expanded: false
 		});
 
-		/**
-		 * @see https://github.com/tweakpane/plugin-essentials
-		 */
-		f.addBlade({
-			view: 'buttongrid',
-			size: [3, 1],
-			cells: (x, y) => ({
-				title: [
-					[locale['info.left'], locale['info.right'], locale['info.top_center']],
-				][y][x],
-			}),
-			label: locale['info.align'],
-		}).on('click', (ev) => {
-			// console.log(ev);
-			const id = ev.index.toString();
+		const folderNotification = ShowFolderNotification(f);
 
-			switch (id) {
-			case '0,0':
-				config.alignLeft();
-				break;
-			case '1,0':
-				config.alignRight();
-				break;
-			case '2,0':
-				config.alignTopMiddle();
-				break;
-			}
-		});
+		const init = () => {
+			const reset = () => {
+				const defaultValues = Global.defaultMenuWindowAlignment();
+				Global.set_menu_window_alignment(defaultValues);
+				config.updateAlignment();
+
+				Emitter.emit(MENU_EVENTS.REQUEST_DELETE_ALIGNMENT);
+				folderNotification.show(locale['info.reset_applied']);
+			};
+
+			const save = () => {
+				Emitter.emit(MENU_EVENTS.REQUEST_SAVE_ALIGNMENT);
+				folderNotification.show(locale['info.settings_saved'], 'warn');
+			};
+
+			/**
+			 * @see https://github.com/tweakpane/plugin-essentials
+			 */
+			f.addBlade({
+				view: 'buttongrid',
+				size: [3, 1],
+				cells: (x, y) => ({
+					title: [
+						[locale['info.left'], locale['info.right'], locale['info.top_center']],
+					][y][x],
+				}),
+				label: locale['info.align'],
+			}).on('click', (ev) => {
+				// console.log(ev);
+				const id = ev.index.toString();
+
+				switch (id) {
+				case '0,0':
+					config.alignLeft();
+					break;
+				case '1,0':
+					config.alignRight();
+					break;
+				case '2,0':
+					config.alignTopMiddle();
+					break;
+				}
+			});
+
+			/**
+			 * @see https://github.com/tweakpane/plugin-essentials
+			 */
+			f.addBlade({
+				view: 'buttongrid',
+				size: [2, 1],
+				cells: (x, y) => ({
+					title: [
+						[locale['btn.reset'], locale['btn.save']],
+					][y][x],
+				}),
+				label: locale['info.actions'],
+			}).on('click', (ev) => {
+				// console.log(ev);
+				const id = ev.index.toString();
+
+				switch (id) {
+				case '0,0':
+					reset();
+					break;
+				case '1,0':
+					save();
+					break;
+				}
+			});
+
+			config.updateAlignment();
+		};
+
+		Emitter.emit(MENU_EVENTS.REQUEST_LOAD_ALIGNMENT);
+		Emitter.on(MENU_EVENTS.REQUEST_LOAD_ALIGNMENT_COMPLETE, init);
 	})();
 
 	const tools = (() => {

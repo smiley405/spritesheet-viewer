@@ -8,7 +8,15 @@ import { msToFPS } from './utils';
  */
 
 /**
+ * @typedef {'left'|'right'|'top-middle'} AlignmentType
+ */
+
+/**
  * @typedef {{width?: number, height?: number, src?: string, currentFileName?: string, pervFileName?: string}} ImageGlobalData
+ */
+
+/**
+ * @typedef {{align: AlignmentType}} MenuWindowAlignmentGlobalData
  */
 
 /**
@@ -114,6 +122,7 @@ function CreateGlobal() {
 		viewport: defaultViewport(),
 		exportData: defaultExportData(),
 		settings: defaultSettings(),
+		menuWindowAlignment: defaultMenuWindowAlignment(),
 	};
 
 	/**
@@ -135,6 +144,15 @@ function CreateGlobal() {
 		return {
 			name: '',
 			version: ''
+		};
+	}
+
+	/**
+	 * @returns {MenuWindowAlignmentGlobalData}
+	 */
+	function defaultMenuWindowAlignment() {
+		return {
+			align: 'left'
 		};
 	}
 
@@ -435,6 +453,13 @@ function CreateGlobal() {
 			mutate_object(state.settings, data);
 		},
 
+		/**
+		 * @param {MenuWindowAlignmentGlobalData} data
+		 */
+		set_menu_window_alignment(data) {
+			mutate_object(state.menuWindowAlignment, data);
+		},
+
 		didGridDimensionsChange() {
 			return !(Global.state.grid.layout.prevWidth === Global.state.grid.layout.width && Global.state.grid.layout.prevHeight === Global.state.grid.layout.height);
 		},
@@ -471,6 +496,7 @@ function CreateGlobal() {
 		defaultGridAppearance,
 		defaultGridLayout,
 		defaultAnimationController,
+		defaultMenuWindowAlignment,
 	};
 }
 
