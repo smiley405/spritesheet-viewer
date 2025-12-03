@@ -4,6 +4,7 @@ import { ANIMATION_CONTROLS_EVENTS } from './events/AnimationControlsEvents';
 import { GENERAL_EVENTS } from './events/GeneralEvents';
 import { GRID_EVENTS } from './events/GridEvents';
 import { MENU_EVENTS } from './events/MenuEvents';
+import { PREVIEW_EVENTS } from './events/PreviewEvents';
 import { SETTINGS_EVENTS } from './events/SettingsEvents';
 import { UPLOADER_EVENTS } from './events/UploaderEvents';
 import { Global } from './Global';
@@ -137,6 +138,34 @@ export function IPCRenderer() {
 			Global.set_animation_controller(settings);
 		}
 		Emitter.emit(ANIMATION_CONTROLS_EVENTS.REQUEST_LOAD_COMPLETE);
+	});
+
+	// preview
+	Emitter.on(PREVIEW_EVENTS.REQUEST_SAVE, () => {
+		const data = Global.defaultPreview();
+		// only save pan and zoom
+		data.zoom = Global.state.preview.zoom;
+		data.pan = Global.state.preview.pan;
+
+		state.saveRecord({id: 'preview', value: data});
+	});
+
+	Emitter.on(PREVIEW_EVENTS.REQUEST_DELETE, () => {
+		state.deleteRecord({id: 'preview'});
+		Emitter.emit(PREVIEW_EVENTS.UPDATE_SETTINGS);
+	});
+
+	Emitter.on(PREVIEW_EVENTS.REQUEST_LOAD, async() => {
+		/**
+		 * @type {import('./Global').PreviewGlobalData}
+		 */
+		const settings = await state.getRecord({id: 'preview'});
+
+		if (settings) {
+			Global.set_preview(settings);
+			Emitter.emit(PREVIEW_EVENTS.UPDATE_SETTINGS);
+		}
+		Emitter.emit(PREVIEW_EVENTS.REQUEST_LOAD_COMPLETE);
 	});
 
 

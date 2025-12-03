@@ -78,6 +78,7 @@ export function PreviewFrames() {
 	Emitter.on(GRID_EVENTS.DESELECT_AREA, onDeselectGridArea.bind(this));
 	Emitter.on(GRID_EVENTS.DESTROY, destroy.bind(this));
 	Emitter.on(VIEWPORT_EVENTS.CREATED, onCreateViewport.bind(this));
+	Emitter.on(PREVIEW_EVENTS.UPDATE_SETTINGS, onUpdateLayoutSettings.bind(this));
 
 	Global.ticker.add(() => {
 		update();
@@ -392,5 +393,10 @@ export function PreviewFrames() {
 
 	function onStopWindowAnimation() {
 		killWindowTween();
+	}
+
+	function onUpdateLayoutSettings() {
+		panzoom.zoom(Global.state.preview.zoom);
+		panzoom.pan(Global.state.preview.pan.x, Global.state.preview.pan.y);
 	}
 }
