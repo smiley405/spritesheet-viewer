@@ -168,6 +168,27 @@ export function IPCRenderer() {
 		Emitter.emit(PREVIEW_EVENTS.REQUEST_LOAD_COMPLETE);
 	});
 
+	// menu-alignment
+	Emitter.on(MENU_EVENTS.REQUEST_SAVE_ALIGNMENT, () => {
+		state.saveRecord({id: 'menu_window_alignment', value: Global.state.menuWindowAlignment});
+	});
+
+	Emitter.on(MENU_EVENTS.REQUEST_DELETE_ALIGNMENT, () => {
+		state.deleteRecord({id: 'menu_window_alignment'});
+	});
+
+	Emitter.on(MENU_EVENTS.REQUEST_LOAD_ALIGNMENT, async() => {
+		/**
+		 * @type {import('./Global').MenuWindowAlignmentGlobalData}
+		 */
+		const settings = await state.getRecord({id: 'menu_window_alignment'});
+
+		if (settings) {
+			Global.set_menu_window_alignment(settings);
+		}
+		Emitter.emit(MENU_EVENTS.REQUEST_LOAD_ALIGNMENT_COMPLETE);
+	});
+
 
 	state.updateImage((e, imgSrc) => {
 		Emitter.emit(UPLOADER_EVENTS.UPDATE_IMAGE, imgSrc);
