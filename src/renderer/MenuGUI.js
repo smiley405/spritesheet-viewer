@@ -867,15 +867,34 @@ export function MenuGUI() {
 				},
 			};
 
-			f.addButton({
-				title: locale['btn.reset']
-			}).on('click', self.reset);
-			f.addButton({
-				title: locale['btn.apply']
-			}).on('click', self.ok);
-			f.addButton({
-				title: locale['btn.save']
-			}).on('click', self.save);
+			/**
+			 * @see https://github.com/tweakpane/plugin-essentials
+			 */
+			f.addBlade({
+				view: 'buttongrid',
+				size: [3, 1],
+				cells: (x, y) => ({
+					title: [
+						[locale['btn.reset'], locale['btn.apply'], locale['btn.save']],
+					][y][x],
+				}),
+				label: locale['info.actions'],
+			}).on('click', (ev) => {
+				// console.log(ev);
+				const id = ev.index.toString();
+
+				switch (id) {
+				case '0,0':
+					self.reset();
+					break;
+				case '1,0':
+					self.ok();
+					break;
+				case '2,0':
+					self.save();
+					break;
+				}
+			});
 		};
 
 		Emitter.emit(GRID_EVENTS.REQUEST_LOAD_APPEARANCE);
@@ -1006,15 +1025,34 @@ export function MenuGUI() {
 				},
 			};
 
-			f.addButton({
-				title: locale['btn.reset']
-			}).on('click', self.reset);
-			f.addButton({
-				title: locale['btn.apply']
-			}).on('click', self.ok);
-			f.addButton({
-				title: locale['btn.save']
-			}).on('click', self.save);
+			/**
+			 * @see https://github.com/tweakpane/plugin-essentials
+			 */
+			f.addBlade({
+				view: 'buttongrid',
+				size: [3, 1],
+				cells: (x, y) => ({
+					title: [
+						[locale['btn.reset'], locale['btn.apply'], locale['btn.save']],
+					][y][x],
+				}),
+				label: locale['info.actions'],
+			}).on('click', (ev) => {
+				// console.log(ev);
+				const id = ev.index.toString();
+
+				switch (id) {
+				case '0,0':
+					self.reset();
+					break;
+				case '1,0':
+					self.ok();
+					break;
+				case '2,0':
+					self.save();
+					break;
+				}
+			});
 		};
 
 		Emitter.emit(SETTINGS_EVENTS.REQUEST_LOAD);
@@ -1240,15 +1278,34 @@ export function MenuGUI() {
 			expanded: false
 		});
 
-		f.addButton({
-			title: locale['tools.align_left']
-		}).on('click', config.alignLeft);
-		f.addButton({
-			title: locale['tools.align_right']
-		}).on('click', config.alignRight);
-		f.addButton({
-			title: locale['tools.align_top_middle']
-		}).on('click', config.alignTopMiddle);
+		/**
+		 * @see https://github.com/tweakpane/plugin-essentials
+		 */
+		f.addBlade({
+			view: 'buttongrid',
+			size: [3, 1],
+			cells: (x, y) => ({
+				title: [
+					[locale['info.left'], locale['info.right'], locale['info.top_center']],
+				][y][x],
+			}),
+			label: locale['info.align'],
+		}).on('click', (ev) => {
+			// console.log(ev);
+			const id = ev.index.toString();
+
+			switch (id) {
+			case '0,0':
+				config.alignLeft();
+				break;
+			case '1,0':
+				config.alignRight();
+				break;
+			case '2,0':
+				config.alignTopMiddle();
+				break;
+			}
+		});
 	})();
 
 	const tools = (() => {

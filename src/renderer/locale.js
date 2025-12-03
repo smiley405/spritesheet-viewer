@@ -14,6 +14,10 @@ export function getLocale() {
 		'info.nothing_to_clear': 'Nothing to Clear',
 		'info.controls': 'Controls',
 		'info.actions': 'Actions',
+		'info.left': 'Left',
+		'info.right': 'Right',
+		'info.top_center': 'Top Center',
+		'info.align': 'Align',
 
 		'btn.cancel': 'Cancel',
 		'btn.ok': 'Ok',
@@ -109,9 +113,6 @@ export function getLocale() {
 
 		'tools.toggle_debug_menu': 'Toggle Debug Menu',
 		'tools.align_title': 'Alignment',
-		'tools.align_left': 'Align Left',
-		'tools.align_right': 'Align Right',
-		'tools.align_top_middle': 'Align Top Middle',
 		'tools.close_opened_folders': 'Close Opened Folders',
 		'tools.close_menu': 'Close Menu',
 
