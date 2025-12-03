@@ -198,9 +198,10 @@ export function MenuGUI() {
 				durationMsInput.refresh();
 			});
 
-			f.addBinding(state.animationController, 'loop', {
+			const loopInput = f.addBinding(state.animationController, 'loop', {
 				label: locale['anim.loop']
 			});
+
 			const playStatInput = f.addBinding(state.animationController, 'play', {
 				label: locale['anim.playMode'],
 				disabled: true,
@@ -209,6 +210,13 @@ export function MenuGUI() {
 			const isFrameEnded = () => {
 				return state.preview.activeFrameIndex === state.preview.totalFrames - 1;
 			};
+
+			function refreshInputs() {
+				durationMsInput.refresh();
+				fpsInput.refresh();
+				loopInput.refresh();
+				playStatInput.refresh();
+			}
 
 			const self = {
 				play: () => {
@@ -231,10 +239,9 @@ export function MenuGUI() {
 					folderNotification.show(locale['info.settings_saved'], 'warn');
 				},
 				reset: () => {
-					const defaultValues = Global.defaultAnimationController();
-					Global.set_animation_controller(defaultValues);
-
+					Global.set_animation_controller(Global.defaultAnimationController());
 					Emitter.emit(ANIMATION_CONTROLS_EVENTS.REQUEST_DELETE);
+					refreshInputs();
 					folderNotification.show(locale['info.reset_applied']);
 				}
 			};
@@ -357,7 +364,7 @@ export function MenuGUI() {
 					folderNotification.show(locale['info.reset_applied']);
 				},
 				save: () => {
-					self.set();
+					// self.set();
 					Emitter.emit(GRID_EVENTS.REQUEST_SAVE_LAYOUT);
 					folderNotification.show(locale['info.settings_saved'], 'warn');
 				}
