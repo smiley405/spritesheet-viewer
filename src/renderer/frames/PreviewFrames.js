@@ -6,33 +6,17 @@ import { UPLOADER_EVENTS } from '@renderer/events/UploaderEvents';
 import { VIEWPORT_EVENTS } from '@renderer/events/ViewportEvents';
 import { Global } from '@renderer/Global';
 import { createPanzoom, getDivElementById, hexToRgba, toPx } from '@renderer/utils';
-import gsap from 'gsap';
+import { gsap } from 'gsap/all';
 
 import { FRAMES_EVENTS } from '../events/FramesEvents';
 
-
-/**
- * @typedef {{
- * from: {x: number, y: number},
- * to: {x: number, y: number},
- * duration: number,
- * yoyo: boolean,
- * repeat: boolean,
- * playing: boolean,
- * ease: string,
- * }} AnimatePreviewWindowProps
- */
-
-/**
- * @typedef {import('@renderer/grid/GridHitBoxes').THitBox} TFrame
- */
 
 export function PreviewFrames() {
 	const previewDiv = getDivElementById('preview');
 	const panzoom = createPanzoom(previewDiv);
 
 	/**
-	 * @type {Map<string, TFrame>}
+	 * @type {Map<string, THitBox>}
 	 */
 	let frames = new Map();
 	/**
@@ -361,7 +345,7 @@ export function PreviewFrames() {
 	}
 
 	/**
-	 * @param {import('@renderer/Global').PanGlobalData} pan
+	 * @param {PanGlobalData} pan
 	 */
 	function onUpdatePan(pan) {
 		panzoom.pan(pan.x ?? panzoom.getPan().x, pan.y ?? panzoom.getPan().y);

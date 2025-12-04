@@ -1,11 +1,6 @@
 import { BasePopup } from './BasePopup';
 
 /**
- * @typedef {object} ExportProgressPopupProps
- * @property {string} text
- */
-
-/**
  * @param {ExportProgressPopupProps} props
  */
 export function ExportProgressPopup(props) {

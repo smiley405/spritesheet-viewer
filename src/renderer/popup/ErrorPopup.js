@@ -3,13 +3,6 @@ import { getDivElementById } from '@renderer/utils';
 import { BasePopup } from './BasePopup';
 
 /**
- * @typedef {object} ErrorPopupProps
- * @property {string} text
- * @property {Function} [onAccept]
- * @property {Function} [onDecline]
- */
-
-/**
  * @param {ErrorPopupProps} props
  */
 export function ErrorPopup(props) {
