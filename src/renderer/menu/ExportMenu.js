@@ -16,7 +16,7 @@ export function ExportMenu({ pane, page }) {
 	const f = page;
 	const self = {
 		/**
-		 * @type {import('@renderer/Global').ExportFileType}
+		 * @type {ExportFileType}
 		 */
 		fileType: 'PNG Sequences',
 		fileNameTags: '',

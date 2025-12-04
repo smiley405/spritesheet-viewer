@@ -125,7 +125,7 @@ export function GridLayoutMenu({ pane, page }) {
 
 		function onAccept() {
 			/**
-			 * @type {import('@renderer/Global').ClearGlobalData}
+			 * @type {ClearGlobalData}
 			 */
 			const backupClearData = {};
 

@@ -39,7 +39,7 @@ export function AnimationPreviewWindowMenu({ page }) {
 	};
 
 	/**
-	 * @type {import('@renderer/frames/PreviewFrames').AnimatePreviewWindowProps}
+	 * @type {AnimatePreviewWindowProps}
 	 */
 	const animateProps =  {
 		from: {x: 0, y: 0},
