@@ -3,13 +3,6 @@ import { getDivElementById } from '@renderer/utils';
 import { BasePopup } from './BasePopup';
 
 /**
- * @typedef {object} ExportCompletedPopupProps
- * @property {string} text
- * @property {Function} [onAccept]
- * @property {Function} [onDecline]
- */
-
-/**
  * @param {ExportCompletedPopupProps} props
  */
 export function ExportCompletedPopup(props) {

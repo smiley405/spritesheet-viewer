@@ -4,6 +4,7 @@ import { toPx } from '@renderer/utils';
 import * as EssentialsPlugin from '@tweakpane/plugin-essentials';
 import {Pane} from 'tweakpane';
 
+import { AlignToolMenu } from './AlignToolMenu';
 import { AnimationControlsMenu } from './AnimationControlsMenu';
 import { AnimationPreviewWindowMenu } from './AnimationPreviewWindowMenu';
 import { ClearMenu } from './ClearMenu';
@@ -18,7 +19,6 @@ import { LoadMenu } from './LoadMenu';
 import { PreviewMenu } from './PreviewMenu';
 import { RememberSelectionMenu } from './RememberSelectionMenu';
 import { ViewportMenu } from './ViewportMenu';
-import { AlignToolMenu } from './AlignToolMenu';
 
 export function Menu() {
 	const locale = getLocale();

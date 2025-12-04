@@ -52,7 +52,7 @@ export function IPCRenderer() {
 
 	Emitter.on(SETTINGS_EVENTS.REQUEST_LOAD, async() => {
 		/**
-		 * @type {import('./Global').SettingsGlobalData}
+		 * @type {SettingsGlobalData}
 		 */
 		const settings = await state.getRecord({id: 'settings'});
 
@@ -82,13 +82,13 @@ export function IPCRenderer() {
 
 	Emitter.on(GRID_EVENTS.REQUEST_LOAD_APPEARANCE, async() => {
 		/**
-		 * @type {import('./Global').GridAppearanceGlobalData}
+		 * @type {GridAppearanceGlobalData}
 		 */
 		let gridAppearance = await state.getRecord({id: 'grid_appearance'});
 
 		/**
 		 * @deprecated - will be deleted after v1.2.5. This is an old way of saving the grid records
-		 * @type {import('./Global').GridGlobalData}
+		 * @type {GridGlobalData}
 		 */
 		const grid = await state.getRecord({id: 'grid'});
 		// Make sure the deprecated settings still works in newer versions
@@ -108,7 +108,7 @@ export function IPCRenderer() {
 
 	Emitter.on(GRID_EVENTS.REQUEST_LOAD_LAYOUT, async() => {
 		/**
-		 * @type {import('./Global').GridLayoutGlobalData}
+		 * @type {GridLayoutGlobalData}
 		 */
 		const gridLayout = await state.getRecord({id: 'grid_layout'});
 		if (gridLayout) {
@@ -130,7 +130,7 @@ export function IPCRenderer() {
 
 	Emitter.on(ANIMATION_CONTROLS_EVENTS.REQUEST_LOAD, async() => {
 		/**
-		 * @type {import('./Global').AnimationControllerGlobalData}
+		 * @type {AnimationControllerGlobalData}
 		 */
 		const settings = await state.getRecord({id: 'animation_controls'});
 
@@ -157,7 +157,7 @@ export function IPCRenderer() {
 
 	Emitter.on(PREVIEW_EVENTS.REQUEST_LOAD, async() => {
 		/**
-		 * @type {import('./Global').PreviewGlobalData}
+		 * @type {PreviewGlobalData}
 		 */
 		const settings = await state.getRecord({id: 'preview'});
 
@@ -179,7 +179,7 @@ export function IPCRenderer() {
 
 	Emitter.on(MENU_EVENTS.REQUEST_LOAD_ALIGNMENT, async() => {
 		/**
-		 * @type {import('./Global').MenuWindowAlignmentGlobalData}
+		 * @type {MenuWindowAlignmentGlobalData}
 		 */
 		const settings = await state.getRecord({id: 'menu_window_alignment'});
 

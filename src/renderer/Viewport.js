@@ -162,7 +162,7 @@ export function Viewport() {
 	}
 
 	/**
-	 * @param {import("./Global").PanGlobalData} pan
+	 * @param {PanGlobalData} pan
 	 */
 	function onUpdatePan(pan) {
 		panzoom.pan(pan.x ?? panzoom.getPan().x, pan.y ?? panzoom.getPan().y);
