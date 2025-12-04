@@ -23,7 +23,7 @@ export function ExportMenu({ pane, page }) {
 		tagList: {
 			tag1: {name: locale['export.tag.gridWidth'], text: ',w{w}'},
 			tag2: {name: locale['export.tag.gridHeight'], text: ',h{h}'},
-			tag3: {name: locale['export.tag.frameRate'], text: ',s{s}'},
+			tag3: {name: locale['export.tag.frameRate'], text: ',fps{fps}'},
 		},
 		confirm: () => {
 			pane.expanded = false;
@@ -39,7 +39,7 @@ export function ExportMenu({ pane, page }) {
 				const tags = self.fileNameTags
 					.replaceAll(/\{\s*w\s*\}/g, String(state.grid.layout.width))
 					.replaceAll(/\{\s*h\s*\}/g, String(state.grid.layout.height))
-					.replaceAll(/\{\s*s\s*\}/g, String(state.animationController.frameRate));
+					.replaceAll(/\{\s*fps\s*\}/g, String(state.animationController.frameRate));
 				return tags;
 			})();
 
